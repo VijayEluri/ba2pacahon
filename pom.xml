@@ -1,0 +1,160 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mondigroup.syk</groupId>
+	<artifactId>ba2pacahon</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<name>from ba to pacahon converter</name>
+    <dependencies>
+	<dependency>
+            <groupId>org.zeromq</groupId>
+            <artifactId>zmq</artifactId>
+            <version>2.0.10</version>
+	</dependency>	
+        <dependency>
+            <groupId>com.hp.hpl.jena</groupId>
+            <artifactId>jena</artifactId>
+            <version>2.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.hpl.jena</groupId>
+            <artifactId>jena</artifactId>
+            <version>2.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>local.sun.java.net</groupId>
+            <artifactId>jaxws-ri</artifactId>
+            <version>2.1.5</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <artifactId>big-archive-client-web-objects</artifactId>
+            <groupId>ru.magnetosoft.bigarchive.client.web</groupId>
+            <version>0.14.75-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.magnetosoft.magnet</groupId>
+            <artifactId>magnet-commons-client</artifactId>
+            <version>1.5.15-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <version>4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.magnetosoft.magnet</groupId>
+            <artifactId>magnet-messaging</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+        </dependency>
+    </dependencies>
+	<profiles>
+		<profile>
+			<id>default-tools.jar</id>
+			<activation>
+				<property>
+					<name>java.vendor</name>
+					<value>Sun Microsystems Inc.</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.sun</groupId>
+					<artifactId>tools</artifactId>
+					<version>1.6</version>
+					<scope>system</scope>
+					<systemPath>${java.home}/../lib/tools.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+    <build>
+		<finalName>ba2pacahon</finalName>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.gost19.ba2pacahon.Fetcher</mainClass>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib</classpathPrefix>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.0</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<silent>true</silent>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <tasks>
+                                <path id="jwdp.classpath">
+                                <path refid="maven.compile.classpath" />
+                                    <pathelement location="${java.home}/../lib/tools.jar" />
+                                </path>
+                                <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+                                    <classpath refid="jwdp.classpath" />
+                                </taskdef>
+                                <echo message="Generate DocumentService WS artifacts..." />
+                                <mkdir dir="${project.build.outputDirectory}" />
+                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/DocumentService.wsdl" package="magnetico.ws.document" />
+                                <echo message="Generate SearchService WS artifacts..." />
+                                <mkdir dir="${project.build.outputDirectory}" />
+                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/SearchService.wsdl" package="magnetico.ws.search" />
+                                <echo message="Generate AttachmentService WS artifacts..." />
+                                <mkdir dir="${project.build.outputDirectory}" />
+                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/AttachmentService.wsdl" package="magnetico.ws.attachment" />
+                                <mkdir dir="${project.build.outputDirectory}" />
+                                <echo message="Generate Organization WS artifacts..." />
+                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/OrganizationEntityService.wsdl" package="magnetico.ws.organization" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+		</plugins>
+	</build>
+</project>
+

@@ -896,11 +896,11 @@ public class Fetcher
 				if (parent == null || parent.length() == 1)
 					isOrganization = true;
 
+				Model node = ModelFactory.createDefaultModel();
+				node.setNsPrefixes(predicates.getPrefixs());
+
 				if (isOrganization == false)
 				{
-					Model node = ModelFactory.createDefaultModel();
-					node.setNsPrefixes(predicates.getPrefixs());
-
 					System.out.println(ii + " add department " + department.getName());
 
 					Resource r_department = node.createResource(predicates.zdb + "dep_" + department.getExtId());
@@ -933,23 +933,29 @@ public class Fetcher
 								departmentsOfExtIdMap.get(parent).getName(), node);
 					}
 
-					pacahon_client.put(ticket, node);
-
 				} else
 				{
-					// writeTriplet(predicates.zdb + "org_" + department.getExtId(), predicates.rdf__type,
-					// predicates.swrc__Organization, false, out);
-					// writeTriplet(predicates.zdb + "doc_" + department.getId(), predicates.rdf__type,
-					// predicates.docs19__organization_card, false, out);
-					// writeTriplet(predicates.zdb + "doc_" + department.getId(), predicates.gost19__externalIdentifer,
-					// department.getExtId(), true, out);
-					// writeTriplet(predicates.zdb + "doc_" + department.getId(), predicates.swrc__name,
-					// department.getName(), true, out, "ru");
-					// writeTriplet(predicates.zdb + "doc_" + department.getId(), predicates.swrc__organization,
-					// predicates.zdb + "org_" + department.getExtId(), false, out);
+					System.out.println(ii + " add organization " + department.getName());
 
+					Resource r_department = node.createResource(predicates.zdb + "org_" + department.getExtId());
+					r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+							ResourceFactory.createProperty(predicates.swrc, "Organization"));
+
+					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
+					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+							ResourceFactory.createProperty(predicates.docs19, "organization_card"));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
+							node.createLiteral(department.getExtId()));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+							node.createLiteral(department.getName()));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "organization"),
+							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
 				}
 
+				// TODO возможно нужно будет записать и детишек
 				// for (String child : childs.get(department.getId()))
 				// {
 				// writeTriplet(department.getId(), predicates.HAS_PART,
@@ -957,14 +963,8 @@ public class Fetcher
 				// }
 
 				// break;
+				pacahon_client.put(ticket, node);
 			}
-
-			if (ii > 4)
-				return;
-
-			OutputStreamWriter out = null;
-
-			out.flush();
 
 			long end = System.currentTimeMillis();
 			System.out.println("Finished in " + ((end - start) / 1000) + " s. for " + deps.size() + " departments.");
@@ -975,21 +975,29 @@ public class Fetcher
 			start = System.currentTimeMillis();
 
 			List<EntityType> list = organizationUtil.getUsers();
+			ii = 0;
 			for (EntityType userEntity : list)
 			{
-
-				// String prefix = blankNodePrefix + personCount++;
+				ii++;
 
 				String userId = userEntity.getUid();
+				System.out.println(ii + " add user " + userId);
 
 				userUri__userObj.put(predicates.zdb + "person_" + userId, userEntity);
 
-				writeTriplet(predicates.zdb + "person_" + userId, predicates.rdf__type, predicates.swrc__Person, false,
-						out);
-				writeTriplet(predicates.zdb + "doc_" + userId, predicates.rdf__type, predicates.docs19__employee_card,
-						false, out);
-				writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__employee, predicates.zdb + "person_"
-						+ userId, false, out);
+				Model node = ModelFactory.createDefaultModel();
+				node.setNsPrefixes(predicates.getPrefixs());
+
+				Resource r_department = node.createResource(predicates.zdb + "person_" + userId);
+				r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+						ResourceFactory.createProperty(predicates.swrc, "Organization"));
+
+				Resource r = node.createResource(predicates.zdb + "doc_" + userId);
+				r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+						ResourceFactory.createProperty(predicates.docs19, "employee_card"));
+
+				r.addProperty(ResourceFactory.createProperty(predicates.gost19, "employee"),
+						ResourceFactory.createProperty(predicates.zdb, "person_" + userId));
 
 				String domainName = null;
 				String password = null;
@@ -998,28 +1006,28 @@ public class Fetcher
 				{
 					if (a.getName().equalsIgnoreCase("firstNameRu"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__firstName, a.getValue(), true,
-								"ru", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "firstName"),
+								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("firstNameEn"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__firstName, a.getValue(), true,
-								"en", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "firstName"),
+								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("secondnameRu"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.gost19__middlename, a.getValue(),
-								true, "ru", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "middlename"),
+								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("secondnameEn"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.gost19__middlename, a.getValue(),
-								true, "en", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "middlename"),
+								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("surnameRu"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__lastName, a.getValue(), true,
-								"ru", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "lastName"),
+								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("surnameEn"))
 					{
-						writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__lastName, a.getValue(), true,
-								"en", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "lastName"),
+								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equals("domainName"))
 					{
 						domainName = a.getValue();
@@ -1030,8 +1038,8 @@ public class Fetcher
 					{
 						String email = a.getValue();
 						if (email != null && email.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__email, a.getValue(), true,
-									out);
+							r.addProperty(ResourceFactory.createProperty(predicates.swrc, "email"),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("id"))
 					{
 						// writeTriplet(p.zdb + "doc_" + userId,
@@ -1042,16 +1050,16 @@ public class Fetcher
 						// "magnet-ontology#pid", a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("pager"))
 					{
-						String value = a.getValue();
-						if (value != null && value.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__pager, a.getValue(),
-									true, out);
+						// String value = a.getValue();
+						// if (value != null && value.length() > 0)
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__pager, a.getValue(),
+						// true, out);
 					} else if (a.getName().equalsIgnoreCase("phone"))
 					{
-						String value = a.getValue();
-						if (value != null && value.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-									out);
+						// String value = a.getValue();
+						// if (value != null && value.length() > 0)
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// out);
 					} else if (a.getName().equalsIgnoreCase("offlineDateBegin"))
 					{
 						// writeTriplet(p.zdb + "doc_" + userId,
@@ -1064,37 +1072,37 @@ public class Fetcher
 						// out);
 					} else if (a.getName().equalsIgnoreCase("departmentId"))
 					{
-						Department department = departmentsOfExtIdMap.get(a.getValue());
+						// Department department = departmentsOfExtIdMap.get(a.getValue());
 
-						if (department == null)
-							System.out.println("dep is null for user (id = " + userId + ")");
-						else
-						{
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__department,
-									predicates.zdb + "dep_" + department.getExtId(), false, out);
-							// write_add_info_of_attribute(predicates.zdb + "doc_" + userId,
-							// predicates.docs19__department, predicates.zdb + "dep_" + department.getExtId(),
-							// predicates.swrc__name, department.getName(), out);
-						}
+						// if (department == null)
+						// System.out.println("dep is null for user (id = " + userId + ")");
+						// else
+						// {
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__department,
+						// predicates.zdb + "dep_" + department.getExtId(), false, out);
+						// write_add_info_of_attribute(predicates.zdb + "doc_" + userId,
+						// predicates.docs19__department, predicates.zdb + "dep_" + department.getExtId(),
+						// predicates.swrc__name, department.getName(), out);
+						// }
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))
 					{
 						String value = a.getValue();
-						if (value != null && value.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-									out);
+						// if (value != null && value.length() > 0)
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// out);
 					} else if (a.getName().equalsIgnoreCase("phoneExt"))
 					{
 						String value = a.getValue();
-						if (value != null && value.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-									out);
+						// if (value != null && value.length() > 0)
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// out);
 					} else if (a.getName().equalsIgnoreCase("mobile"))
 					{
 						String value = a.getValue();
-						if (value != null && value.length() > 0)
-							writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-									out);
+						// if (value != null && value.length() > 0)
+						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// out);
 					} else if (a.getName().equalsIgnoreCase("active"))
 					{
 						// writeTriplet(userId, "magnet-ontology#isActive",
@@ -1158,6 +1166,7 @@ public class Fetcher
 					// out_auth_data);
 				}
 
+				pacahon_client.put(ticket, node);
 			}
 
 			end = System.currentTimeMillis();
@@ -1167,9 +1176,6 @@ public class Fetcher
 			 */
 
 			System.out.println("-----------------------------------------");
-
-			out.close();
-			// out_auth_data.close();
 
 		} catch (Exception e)
 		{

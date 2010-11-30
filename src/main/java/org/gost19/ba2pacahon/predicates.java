@@ -5,11 +5,6 @@ import java.util.Map;
 
 public class predicates
 {
-	// public static final String HAS_PART = "";
-	// public static final String MEMBER_OF = "";
-	// public static final String LOGIN_NAME = "";
-	// public static final String IS_ADMIN = "";
-
 	// //////////////////////////////////////////////////////////////////////////////////////////////////
 	public static final String xsd = "http://www.w3.org/2001/XMLSchema#";
 	public static final String dc = "http://purl.org/dc/elements/1.1/";
@@ -89,6 +84,7 @@ public class predicates
 	public static final String swrc__Organization = swrc + "Organization";
 	public static final String swrc__email = swrc + "email";
 	public static final String swrc__phone = swrc + "phone";
+	public static final String swrc__photo = swrc + "photo";
 	public static final String swrc__creationDate = swrc + "creationDate";
 	public static final String swrc__endDate = swrc + "endDate";
 	public static final String swrc__startDate = swrc + "startDate";
@@ -117,6 +113,7 @@ public class predicates
 	public static final String docs19__content = docs19 + "content";
 	public static final String docs19__from = docs19 + "from";
 	public static final String docs19__to = docs19 + "to";
+	public static final String docs19__position = docs19 + "position";
 
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";

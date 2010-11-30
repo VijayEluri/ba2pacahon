@@ -912,7 +912,7 @@ public class Fetcher
 							ResourceFactory.createProperty(predicates.docs19, "department_card"));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
-							node.createLiteral(department.getName()));
+							node.createLiteral(department.getName(), "ru"));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "department"),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
@@ -949,7 +949,7 @@ public class Fetcher
 							node.createLiteral(department.getExtId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
-							node.createLiteral(department.getName()));
+							node.createLiteral(department.getName(), "ru"));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "organization"),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
@@ -1050,16 +1050,16 @@ public class Fetcher
 						// "magnet-ontology#pid", a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("pager"))
 					{
-						// String value = a.getValue();
-						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__pager, a.getValue(),
-						// true, out);
+						String value = a.getValue();
+						if (value != null && value.length() > 0)
+							r.addProperty(ResourceFactory.createProperty(predicates.docs19, "pager"),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("phone"))
 					{
-						// String value = a.getValue();
-						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-						// out);
+						String value = a.getValue();
+						if (value != null && value.length() > 0)
+							r.addProperty(ResourceFactory.createProperty(predicates.swrc, "phone"),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("offlineDateBegin"))
 					{
 						// writeTriplet(p.zdb + "doc_" + userId,
@@ -1072,18 +1072,19 @@ public class Fetcher
 						// out);
 					} else if (a.getName().equalsIgnoreCase("departmentId"))
 					{
-						// Department department = departmentsOfExtIdMap.get(a.getValue());
+						Department department = departmentsOfExtIdMap.get(a.getValue());
 
-						// if (department == null)
-						// System.out.println("dep is null for user (id = " + userId + ")");
-						// else
-						// {
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.docs19__department,
-						// predicates.zdb + "dep_" + department.getExtId(), false, out);
-						// write_add_info_of_attribute(predicates.zdb + "doc_" + userId,
-						// predicates.docs19__department, predicates.zdb + "dep_" + department.getExtId(),
-						// predicates.swrc__name, department.getName(), out);
-						// }
+						if (department == null)
+							System.out.println("dep is null for user (id = " + userId + ")");
+						else
+						{
+							r.addProperty(ResourceFactory.createProperty(predicates.docs19, "department"),
+									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
+
+							write_add_info_of_attribute(predicates.zdb, "doc_" + userId, predicates.docs19,
+									"department", predicates.zdb, "dep_" + department.getExtId(), predicates.swrc,
+									"name", department.getName(), node);
+						}
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))
 					{
@@ -1100,9 +1101,9 @@ public class Fetcher
 					} else if (a.getName().equalsIgnoreCase("mobile"))
 					{
 						String value = a.getValue();
-						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
-						// out);
+						if (value != null && value.length() > 0)
+							r.addProperty(ResourceFactory.createProperty(predicates.swrc, "phone"),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("active"))
 					{
 						// writeTriplet(userId, "magnet-ontology#isActive",
@@ -1118,6 +1119,9 @@ public class Fetcher
 						// a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("photo"))
 					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "photo"),
+								node.createLiteral(a.getValue()));
+
 						// writeTriplet(userId,
 						// "http://swrc.ontoware.org/ontology#photo",
 						// a.getValue(), true, out);
@@ -1127,12 +1131,12 @@ public class Fetcher
 						// a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("postRu"))
 					{
-						// writeTriplet(userId, "magnet-ontology#onPosition",
-						// a.getValue(), true, "Ru", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "position"),
+								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("postEn"))
 					{
-						// writeTriplet(userId, "magnet-ontology#onPosition",
-						// a.getValue(), true, "En", out);
+						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "position"),
+								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("administrator"))
 					{
 						// if (a.getValue().equals("1"))
@@ -1158,6 +1162,7 @@ public class Fetcher
 				{
 					// обяьвим этого субьекта как аутентифицируемого и добавим
 					// необходимые данные, выгружаем в отдельный файл
+					
 					// writeTriplet(predicates.zdb + "person_" + userId, predicates.rdf__type,
 					// predicates.auth__Authenticated, false, out_auth_data);
 					// writeTriplet(predicates.zdb + "person_" + userId, predicates.auth__login, domainName, true,

@@ -18,6 +18,12 @@ public class predicates
 	public static final String zdb = "http://user-db#";
 	public static final String user_onto = "http://user-onto.org#";
 	public static final String msg = "http://gost19.org/message#";
+	public static final String query = "http://gost19.org/query#";
+
+	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
+			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
+			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
+			+ "> .\n";
 
 	public static final String ns_f_user_onto = "http://user-onto.org";
 
@@ -118,7 +124,9 @@ public class predicates
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";
 	public static final String auth__Authenticated = auth + "Authenticated";
-	
+
+	public static final String query__get = query + "get";
+
 	public static final String msg__Message = msg + "Message";
 
 	private static Map<String, String> prefixs = new HashMap<String, String>();
@@ -134,6 +142,7 @@ public class predicates
 			prefixs.put("swrc", swrc);
 			prefixs.put("docs19", docs19);
 			prefixs.put("gost19", gost19);
+			prefixs.put("query", query);
 		}
 
 		return prefixs;

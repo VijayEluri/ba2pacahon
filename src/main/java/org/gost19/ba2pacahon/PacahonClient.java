@@ -1,22 +1,17 @@
 package org.gost19.ba2pacahon;
 
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.StringReader;
 import java.util.UUID;
 
 import org.zeromq.ZMQ;
 
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFReader;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 public class PacahonClient
 {
@@ -26,7 +21,7 @@ public class PacahonClient
 	PacahonClient(String connectTo)
 	{
 		if (connectTo == null)
-			connectTo = "tcp://127.0.0.1:5555";
+			connectTo = "tcp://172.17.4.64:5555";
 
 		ctx = ZMQ.context(1);
 		socket = ctx.socket(ZMQ.REQ);
@@ -94,13 +89,76 @@ public class PacahonClient
 		byte[] rr = socket.recv(0);
 
 		String result = new String(rr);
-		
+
 		// проверяем все ли ок
 		int pos = result.indexOf("msg:status");
 		if (pos > 0 && result.indexOf("ok", pos) > 0)
 			return true;
 
 		return false;
+	}
+
+	public Model get(String ticket, Model arg) throws Exception
+	{
+		UUID msg_uuid = UUID.randomUUID();
+
+		// преобразуем data в строку
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		RDFWriter w = arg.getWriter("N3");
+		w.write(arg, baos, "");
+		String str_data = baos.toString();
+
+		// отрезаем префиксы
+		int last_prefix = str_data.lastIndexOf("@prefix");
+		if (last_prefix > 0)
+		{
+			last_prefix = str_data.indexOf("> .", last_prefix);
+			str_data = str_data.substring(last_prefix + 3);
+		}
+
+		// меняем ["] на [\"]
+		str_data = str_data.replaceAll("\"", "\\\\\"");
+
+		// model.write(baos, "N3");
+
+		String msg = "msg:M" + msg_uuid.toString() + "\n" + "rdf:type msg:Message ;\n" + "msg:sender \"client2\" ;\n"
+				+ "msg:ticket \"" + ticket + "\" ;\n" + "msg:reciever \"pacahon\" ;\n" + "msg:command \"get\" ;\n"
+				+ "msg:args\n" + "\"\"\"" + str_data + "\"\"\" .\0";
+
+		// отправляем
+		socket.send(msg.getBytes(), 0);
+
+		byte[] rr = socket.recv(0);
+
+		String result = new String(rr, "UTF-8");
+
+		// проверяем все ли ок
+		int pos = result.indexOf("msg:status");
+		if (pos > 0 && result.indexOf("ok", pos) > 0)
+		{
+			pos = result.indexOf("msg:result");
+			if (pos > 0)
+			{
+				int start = result.indexOf("\"\"\"", pos);
+				int stop = result.indexOf("\"\"\"", start + 3);
+
+				result = result.substring(start + 3, stop);
+				result = result.replaceAll("\\\\\"", "\"");
+				
+				Model message = ModelFactory.createDefaultModel();
+
+				result = predicates.all_prefixs + result;
+				StringReader sr = new StringReader(result);
+				RDFReader r = message.getReader("N3");
+				String baseURI = "";
+				r.read(message, sr, baseURI);
+				sr.close();
+				return message;
+			}
+
+		}
+
+		return null;
 	}
 
 	public static void main(String[] args) throws Exception
@@ -122,14 +180,17 @@ public class PacahonClient
 		// r.addProperty(ResourceFactory.createProperty(predicates.msg, "args"), data);
 		Model data = ModelFactory.createDefaultModel();
 		data.setNsPrefixes(predicates.getPrefixs());
-		Resource r = data.createResource("fdf");
-		r.addProperty(ResourceFactory.createProperty(predicates.msg, "Pepend"), data.createLiteral("gfhgdj"));
+		Resource r = data.createResource(predicates.zdb + "doc_245e1592-2593-40cd-ae69-3226144e86c1");
+		r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+				ResourceFactory.createProperty(predicates.query, "get"));
+		r.addProperty(ResourceFactory.createProperty(predicates.gost19, "parentDepartment"),
+				ResourceFactory.createProperty(predicates.query, "get"));
 
 		// Triple tt = new Triple(Node.createURI(Predicate.zdb + "doc_123"), Node.createURI(Predicate.rdf__type),
 		// Node.createURI(Predicate.swrc__Department));
 		// data.add(tt);
 
-		pacahon_client.put(ticket, data);
+		pacahon_client.get(ticket, data);
 	}
 
 }

@@ -1014,11 +1014,11 @@ public class Fetcher
 								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("secondnameRu"))
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "middlename"),
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "middleName"),
 								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("secondnameEn"))
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "middlename"),
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "middleName"),
 								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("surnameRu"))
 					{
@@ -1162,11 +1162,13 @@ public class Fetcher
 				{
 					// обяьвим этого субьекта как аутентифицируемого и добавим
 					// необходимые данные, выгружаем в отдельный файл
-					
-					// writeTriplet(predicates.zdb + "person_" + userId, predicates.rdf__type,
-					// predicates.auth__Authenticated, false, out_auth_data);
-					// writeTriplet(predicates.zdb + "person_" + userId, predicates.auth__login, domainName, true,
-					// out_auth_data);
+
+					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+							ResourceFactory.createProperty(predicates.auth, "Authenticated"));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.auth, "login"),
+							node.createLiteral(domainName));
+
 					// writeTriplet(predicates.zdb + "person_" + userId, predicates.auth__credential, password, true,
 					// out_auth_data);
 				}

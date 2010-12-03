@@ -23,7 +23,7 @@ public class predicates
 	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
 			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
 			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
-			+ "> .\n";
+			+ "> .\n" + "@prefix docs19: <" + docs19 + "> .\n";
 
 	public static final String ns_f_user_onto = "http://user-onto.org";
 
@@ -143,6 +143,7 @@ public class predicates
 			prefixs.put("docs19", docs19);
 			prefixs.put("gost19", gost19);
 			prefixs.put("query", query);
+			prefixs.put("auth", auth);
 		}
 
 		return prefixs;

@@ -5,66 +5,112 @@ import java.io.Serializable;
 import magnetico.ws.organization.AttributeType;
 import magnetico.ws.organization.EntityType;
 
-
 /**
  * 
  * @author SheringaA
  */
-public class Department implements Serializable {
+public class Department implements Serializable
+{
 
-    private static final long serialVersionUID = 1;
-    private String name;
-    private String id;
-    private String extId;
-    private String organizationId;
+	private static final long serialVersionUID = 1;
+	private String nameEn;
+	private String nameRu;
+	private String id;
+	private String extId;
+	private String organizationId;
+	private boolean isActive = false;
 
-    public Department() {
-    }
+	public Department()
+	{
+	}
 
-    public Department(EntityType blObject, String locale) {
-        setId(blObject.getUid());
+	public Department(EntityType blObject, String locale)
+	{
+		setId(blObject.getUid());
 
-        if (blObject.getAttributes() != null) {
-            for (AttributeType a : blObject.getAttributes().getAttributeList()) {
-                if (a.getName().equalsIgnoreCase("name" + locale)) {
-                    setName(a.getValue());
-                } // end else if
-                else if (a.getName().equalsIgnoreCase("id")) {
-                    setExtId(a.getValue());
-                } // end else if
-            }
-        } // end create_department()
-    }
+		if (blObject.getAttributes() != null)
+		{
+			for (AttributeType a : blObject.getAttributes().getAttributeList())
+			{
+				if (a.getName().equalsIgnoreCase("nameRu"))
+				{
+					setNameRu(a.getValue());
+				} // end else if
+				if (a.getName().equalsIgnoreCase("nameEn"))
+				{
+					setNameEn(a.getValue());
+				} // end else if
+				else if (a.getName().equalsIgnoreCase("id"))
+				{
+					setExtId(a.getValue());
+				} // end else if
+				else if (a.getName().equalsIgnoreCase("active"))
+				{
+					if (a.getValue().equals("true"))
+						setActive(true);
+				} // end else if
 
-    public String getId() {
-        return id;
-    }
+			}
+		} // end create_department()
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public String getId()
+	{
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(String id)
+	{
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getExtId()
+	{
+		return extId;
+	}
 
-    public String getExtId() {
-        return extId;
-    }
+	public void setExtId(String internalId)
+	{
+		this.extId = internalId;
+	}
 
-    public void setExtId(String internalId) {
-        this.extId = internalId;
-    }
-    
-    public String getOrganizationId() {
-        return organizationId;
-    }
+	public String getOrganizationId()
+	{
+		return organizationId;
+	}
 
-    public void setOrganizationId(String organizationId) {
-        this.organizationId = organizationId;
-    }
+	public void setOrganizationId(String organizationId)
+	{
+		this.organizationId = organizationId;
+	}
+
+	public void setActive(boolean isActive)
+	{
+		this.isActive = isActive;
+	}
+
+	public boolean isActive()
+	{
+		return isActive;
+	}
+
+	public void setNameEn(String nameEn)
+	{
+		this.nameEn = nameEn;
+	}
+
+	public String getNameEn()
+	{
+		return nameEn;
+	}
+
+	public void setNameRu(String nameRu)
+	{
+		this.nameRu = nameRu;
+	}
+
+	public String getNameRu()
+	{
+		return nameRu;
+	}
 }

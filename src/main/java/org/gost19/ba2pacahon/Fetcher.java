@@ -799,7 +799,7 @@ public class Fetcher
 	 */
 	private static void fetchOrganization(String name_file)
 	{
-
+		// 1144668555628
 		try
 		{
 			PacahonClient pacahon_client = new PacahonClient(null);
@@ -901,18 +901,36 @@ public class Fetcher
 
 				if (isOrganization == false)
 				{
-					System.out.println(ii + " add department " + department.getName());
+					System.out.println(ii + " add department " + department.getNameRu());
 
 					Resource r_department = node.createResource(predicates.zdb + "dep_" + department.getExtId());
 					r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
 							ResourceFactory.createProperty(predicates.swrc, "Department"));
 
+					if (department.isActive())
+					{
+						r_department.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+					}
+
 					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
 							ResourceFactory.createProperty(predicates.docs19, "department_card"));
 
+					if (department.isActive())
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+					}
+
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
-							node.createLiteral(department.getName(), "ru"));
+							node.createLiteral(department.getNameRu(), "ru"));
+
+					if (department.getNameEn() != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+								node.createLiteral(department.getNameEn(), "en"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "department"),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
@@ -930,26 +948,44 @@ public class Fetcher
 
 						write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs19,
 								"parentDepartment", predicates.zdb, "dep_" + parent, predicates.swrc, "name",
-								departmentsOfExtIdMap.get(parent).getName(), node);
+								departmentsOfExtIdMap.get(parent).getNameRu(), node);
 					}
 
 				} else
 				{
-					System.out.println(ii + " add organization " + department.getName());
+					System.out.println(ii + " add organization " + department.getNameRu());
 
 					Resource r_department = node.createResource(predicates.zdb + "org_" + department.getExtId());
 					r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
 							ResourceFactory.createProperty(predicates.swrc, "Organization"));
 
+					if (department.isActive())
+					{
+						r_department.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+					}
+
 					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
 							ResourceFactory.createProperty(predicates.docs19, "organization_card"));
+
+					if (department.isActive())
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
 							node.createLiteral(department.getExtId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
-							node.createLiteral(department.getName(), "ru"));
+							node.createLiteral(department.getNameRu(), "ru"));
+
+					if (department.getNameEn() != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+								node.createLiteral(department.getNameEn(), "en"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "organization"),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
@@ -988,9 +1024,9 @@ public class Fetcher
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
 
-				Resource r_department = node.createResource(predicates.zdb + "person_" + userId);
-				r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
-						ResourceFactory.createProperty(predicates.swrc, "Organization"));
+				Resource r_user = node.createResource(predicates.zdb + "person_" + userId);
+				r_user.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+						ResourceFactory.createProperty(predicates.swrc, "Employee"));
 
 				Resource r = node.createResource(predicates.zdb + "doc_" + userId);
 				r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
@@ -1004,6 +1040,14 @@ public class Fetcher
 
 				for (AttributeType a : userEntity.getAttributes().getAttributeList())
 				{
+					if (a.getName().equalsIgnoreCase("active") && a.getValue().equalsIgnoreCase("true"))
+					{
+						r_user.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+								node.createLiteral("true"));
+					}
+
 					if (a.getName().equalsIgnoreCase("firstNameRu"))
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "firstName"),
@@ -1083,7 +1127,7 @@ public class Fetcher
 
 							write_add_info_of_attribute(predicates.zdb, "doc_" + userId, predicates.docs19,
 									"department", predicates.zdb, "dep_" + department.getExtId(), predicates.swrc,
-									"name", department.getName(), node);
+									"name", department.getNameRu(), node);
 						}
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))

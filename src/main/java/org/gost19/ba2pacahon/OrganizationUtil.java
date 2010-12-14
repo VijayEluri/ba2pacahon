@@ -49,8 +49,8 @@ public class OrganizationUtil {
 		if (organizationInvoker != null) {
 			try {
 
-				PreparedQueryType query = createQuery("*", "name" + locale
-						+ " like^ ?", "*", "*");
+				PreparedQueryType query = createQuery("*", ""
+						+ "", "*", "*");
 				EntityContainerType ec = organizationInvoker
 						.queryEntityContainer("department", query);
 

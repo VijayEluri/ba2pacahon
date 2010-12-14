@@ -120,6 +120,7 @@ public class predicates
 	public static final String docs19__from = docs19 + "from";
 	public static final String docs19__to = docs19 + "to";
 	public static final String docs19__position = docs19 + "position";
+	public static final String docs19__active = docs19 + "active";
 
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";

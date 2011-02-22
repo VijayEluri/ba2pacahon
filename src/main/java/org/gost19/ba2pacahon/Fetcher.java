@@ -826,6 +826,9 @@ public class Fetcher
 			HashMap<String, String> childToParent = new HashMap<String, String>();
 			for (Department department : deps)
 			{
+				if (department.getExtId() == null)
+					continue;
+
 				if (department.getExtId().length() == 1)
 					continue;
 
@@ -878,7 +881,7 @@ public class Fetcher
 			{
 				ii++;
 
-				if (department.getExtId().length() == 1)
+				if (department.getExtId() == null || department.getExtId().length() == 1)
 				{
 					System.out.println("exclude node:" + department.getExtId());
 					continue;
@@ -909,7 +912,7 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r_department.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r_department.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -919,7 +922,7 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -961,7 +964,7 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r_department.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r_department.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -971,7 +974,7 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -1042,9 +1045,9 @@ public class Fetcher
 				{
 					if (a.getName().equalsIgnoreCase("active") && a.getValue().equalsIgnoreCase("true"))
 					{
-						r_user.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r_user.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -1148,10 +1151,6 @@ public class Fetcher
 						if (value != null && value.length() > 0)
 							r.addProperty(ResourceFactory.createProperty(predicates.swrc, "phone"),
 									node.createLiteral(a.getValue()));
-					} else if (a.getName().equalsIgnoreCase("active"))
-					{
-						// writeTriplet(userId, "magnet-ontology#isActive",
-						// a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("employeeCategoryR3"))
 					{
 						// writeTriplet(userId,

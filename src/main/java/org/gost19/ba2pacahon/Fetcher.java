@@ -30,6 +30,14 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
+// это не организации и не подразделения, это группы:
+// fb6583b7-ed14-492f-bf92-45eb3cab3a56 - СТЕП_подрядные организации
+// bbee1427-9362-4a8b-8056-4ba4b772a5a0 - Другие_Others
+// 926abd62-c00d-4f9e-8e36-dcb76aa0c23a - _Проект'STEP'
+// b0569cc4-4cd5-4aab-827b-4bcc61371ab9 - Проект 'Новый Взгляд'
+// 3ac5dbf1-9281-4f5e-93a5-b41657223ce6 - Холдинг
+// 5bf316d8-2424-4780-a81b-262214543f61 - Филиалы ООО "Финлеском"
+
 public class Fetcher
 {
 

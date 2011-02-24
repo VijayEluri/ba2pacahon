@@ -113,4 +113,9 @@ public class Department implements Serializable
 	{
 		return nameRu;
 	}
+	
+	public String toString ()
+	{
+		return id + ":" + extId + ":" + nameRu + "\n";
+	}
 }

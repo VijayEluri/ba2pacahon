@@ -45,7 +45,7 @@
   <classpathentry kind="var" path="M2_REPO/stax/stax-api/1.0.1/stax-api-1.0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/local/sun/java/net/stax-ex/2.1.5/stax-ex-2.1.5.jar"/>
   <classpathentry kind="var" path="M2_REPO/local/sun/java/net/streambuffer/2.1.5/streambuffer-2.1.5.jar"/>
-  <classpathentry kind="lib" path="/usr/lib/jvm/java-6-sun-1.6.0.22/lib/tools.jar"/>
+  <classpathentry kind="lib" path="/usr/lib/jvm/java-6-sun-1.6.0.24/lib/tools.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/codehaus/woodstox/wstx-asl/3.2.2/wstx-asl-3.2.2.jar"/>
   <classpathentry kind="var" path="M2_REPO/xerces/xercesImpl/2.7.1/xercesImpl-2.7.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/zeromq/zmq/2.0.10/zmq-2.0.10.jar"/>

@@ -30,14 +30,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
-// это не организации и не подразделения, это группы:
-// fb6583b7-ed14-492f-bf92-45eb3cab3a56 - СТЕП_подрядные организации
-// bbee1427-9362-4a8b-8056-4ba4b772a5a0 - Другие_Others
-// 926abd62-c00d-4f9e-8e36-dcb76aa0c23a - _Проект'STEP'
-// b0569cc4-4cd5-4aab-827b-4bcc61371ab9 - Проект 'Новый Взгляд'
-// 3ac5dbf1-9281-4f5e-93a5-b41657223ce6 - Холдинг
-// 5bf316d8-2424-4780-a81b-262214543f61 - Филиалы ООО "Финлеском"
-
 public class Fetcher
 {
 
@@ -64,17 +56,31 @@ public class Fetcher
 	private static OrganizationUtil organizationUtil;
 	private static String user_docflow = "541e2793-abc4-437a-9c71-6a1ac0434acf";
 
+	private static HashMap<String, String> isGroup;
+
 	public static void main(String[] args) throws Exception
 	{
+		isGroup = new HashMap<String, String>();
+		// это не организации и не подразделения, это группы:
+		isGroup.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
+		isGroup.put("bbee1427-9362-4a8b-8056-4ba4b772a5a0", "Другие_Others");
+		isGroup.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
+		isGroup.put("b0569cc4-4cd5-4aab-827b-4bcc61371ab9", "Проект 'Новый Взгляд'");
+		isGroup.put("3ac5dbf1-9281-4f5e-93a5-b41657223ce6", "Холдинг");
+		isGroup.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
+		isGroup.put("09fb4c26-b7f6-441d-9924-deda3685bb9d", "Magnetico");
+		isGroup.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
+		isGroup.put("0056f4df-e72c-4c4a-82cb-a1ac752a615e", "Структура");
+
 		// exclude_code.put("$parentDocumentId", "Y");
 		{
 			code_onto.put("date_from", predicates.swrc__startDate);
 			code_onto.put("to", predicates.swrc__endDate);
 			code_onto.put("date_to", predicates.swrc__endDate);
 			code_onto.put("Дата окончания (планируемая)", predicates.swrc__endDate);
-			code_onto.put("from", predicates.docs19__from);
-			code_onto.put("От кого", predicates.docs19__from);
-			code_onto.put("Кому", predicates.docs19__to);
+			code_onto.put("from", predicates.docs__from);
+			code_onto.put("От кого", predicates.docs__from);
+			code_onto.put("Кому", predicates.docs__to);
 			code_onto.put("name", predicates.swrc__name);
 			code_onto.put("Name", predicates.swrc__name);
 			code_onto.put("Название", predicates.swrc__name);
@@ -84,19 +90,19 @@ public class Fetcher
 			code_onto.put("Тема", predicates.dc__subject);
 			code_onto.put("Заголовок", predicates.dc__title);
 			code_onto.put("Тип", predicates.dc__type);
-			code_onto.put("Подразделение", predicates.docs19__department);
+			code_onto.put("Подразделение", predicates.docs__unit);
 			code_onto.put("Дата окончания", predicates.swrc__endDate);
 			code_onto.put("Дата начала", predicates.swrc__startDate);
-			code_onto.put("В копию", predicates.docs19__carbon_copy);
-			code_onto.put("Контрагент (название/ страна/ город)", predicates.docs19__contractor);
-			code_onto.put("Контрагент", predicates.docs19__contractor);
-			code_onto.put("Вложения", predicates.docs19__FileDescription);
-			code_onto.put("Вложение", predicates.docs19__FileDescription);
-			code_onto.put("file", predicates.docs19__FileDescription);
+			code_onto.put("В копию", predicates.docs__carbon_copy);
+			code_onto.put("Контрагент (название/ страна/ город)", predicates.docs__contractor);
+			code_onto.put("Контрагент", predicates.docs__contractor);
+			code_onto.put("Вложения", predicates.docs__FileDescription);
+			code_onto.put("Вложение", predicates.docs__FileDescription);
+			code_onto.put("file", predicates.docs__FileDescription);
 			code_onto.put("Ключевые слова", predicates.swrc__keywords);
 			code_onto.put("Номер", predicates.swrc__number);
-			code_onto.put("Ссылка на документ", predicates.docs19__link);
-			code_onto.put("Содержание", predicates.docs19__content);
+			code_onto.put("Ссылка на документ", predicates.docs__link);
+			code_onto.put("Содержание", predicates.docs__content);
 			code_onto.put("Краткое содержание", predicates.dc__description);
 			code_onto.put("Комментарии", predicates.swrc__note);
 			code_onto.put("Комментарий", predicates.swrc__note);
@@ -197,7 +203,7 @@ public class Fetcher
 
 		IXMLParser parser = XMLParserFactory.createDefaultXMLParser();
 
-		writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.docs19, false, out);
+		writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.docs, false, out);
 		writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.f_swrc, false, out);
 		writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.gost19, false, out);
 		writeTriplet(predicates.f_zdb, predicates.rdf__type, predicates.owl__Ontology, false, out);
@@ -376,7 +382,7 @@ public class Fetcher
 		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.dc, false, out);
 		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.f_swrc, false, out);
 		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.gost19, false, out);
-		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.docs19, false, out);
+		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.docs, false, out);
 		writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.user_onto, false, out);
 		writeTriplet(predicates.f_user_onto, predicates.rdf__type, predicates.owl__Ontology, false, out);
 
@@ -449,8 +455,8 @@ public class Fetcher
 				// <http://user-onto.org#internal_memo>
 				// <http://www.w3.org/2000/01/rdf-schema#subClassOf>
 				// <http://gost19.org/base#Document> .
-				writeTriplet(predicates.user_onto + id, predicates.rdfs__subClassOf, predicates.docs19__Document,
-						false, out);
+				writeTriplet(predicates.user_onto + id, predicates.rdfs__subClassOf, predicates.docs__Document, false,
+						out);
 
 				// <http://user-onto.org#internal_memo>
 				// <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
@@ -588,10 +594,10 @@ public class Fetcher
 						} else if (type.equals("DATEINTERVAL"))
 						{
 							typeLabel = "date_interval";
-							obj_owl__allValuesFrom = predicates.docs19__dateInterval;
+							obj_owl__allValuesFrom = predicates.docs__dateInterval;
 						} else if (type.equals("FILE"))
 						{
-							obj_owl__allValuesFrom = predicates.docs19__FileDescription;
+							obj_owl__allValuesFrom = predicates.docs__FileDescription;
 							typeLabel = "attachment";
 						} else if (type.equals("LINK") || type.equals("DICTIONARY"))
 						{
@@ -606,7 +612,7 @@ public class Fetcher
 								}
 
 							} else
-								obj_owl__allValuesFrom = predicates.docs19__Document;
+								obj_owl__allValuesFrom = predicates.docs__Document;
 
 							if (descr.indexOf("$composition") >= 0)
 							{
@@ -820,11 +826,13 @@ public class Fetcher
 
 			List<Department> deps = organizationUtil.getDepartments();
 
+			System.out.print(deps);
+			
 			ArrayList<String> excludeNode = new ArrayList<String>();
-			excludeNode.add("1154685117926");
-			excludeNode.add("1146725963873");
-			excludeNode.add("1000");
-			excludeNode.add("123456");
+			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ СПЕЦВЫЗОВА
+//			excludeNode.add("1146725963873");
+//			excludeNode.add("1000");
+//			excludeNode.add("123456");
 
 			// находим родителей для всех подразделений
 			int buCounter = 0;
@@ -901,6 +909,13 @@ public class Fetcher
 					continue;
 				}
 
+				if (isGroup.get(department.getId()) != null)
+				{
+					// это группа
+					deps.size();
+					
+				}
+				
 				String parent = childToParent.get(department.getExtId());
 				boolean isOrganization = false;
 
@@ -920,17 +935,17 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r_department.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r_department.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
 					}
 
 					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
-							ResourceFactory.createProperty(predicates.docs19, "department_card"));
+							ResourceFactory.createProperty(predicates.docs, "department_card"));
 
 					if (department.isActive())
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -943,7 +958,7 @@ public class Fetcher
 								node.createLiteral(department.getNameEn(), "en"));
 					}
 
-					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "department"),
+					r.addProperty(ResourceFactory.createProperty(predicates.docs, "department"),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "organization"),
@@ -957,8 +972,8 @@ public class Fetcher
 						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "parentDepartment"),
 								ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
 
-						write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs19,
-								"parentDepartment", predicates.zdb, "dep_" + parent, predicates.swrc, "name",
+						write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs,
+								"parentUnit", predicates.zdb, "dep_" + parent, predicates.swrc, "name",
 								departmentsOfExtIdMap.get(parent).getNameRu(), node);
 					}
 
@@ -972,17 +987,17 @@ public class Fetcher
 
 					if (department.isActive())
 					{
-						r_department.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r_department.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
 					}
 
 					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
-							ResourceFactory.createProperty(predicates.docs19, "organization_card"));
+							ResourceFactory.createProperty(predicates.docs, "organization_card"));
 
 					if (department.isActive())
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -998,7 +1013,7 @@ public class Fetcher
 								node.createLiteral(department.getNameEn(), "en"));
 					}
 
-					r.addProperty(ResourceFactory.createProperty(predicates.docs19, "organization"),
+					r.addProperty(ResourceFactory.createProperty(predicates.docs, "organization"),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
 				}
 
@@ -1026,6 +1041,9 @@ public class Fetcher
 			for (EntityType userEntity : list)
 			{
 				ii++;
+				
+				if (ii % 1000 == 0)
+					Thread.sleep(1000);
 
 				String userId = userEntity.getUid();
 				System.out.println(ii + " add user " + userId);
@@ -1041,7 +1059,7 @@ public class Fetcher
 
 				Resource r = node.createResource(predicates.zdb + "doc_" + userId);
 				r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
-						ResourceFactory.createProperty(predicates.docs19, "employee_card"));
+						ResourceFactory.createProperty(predicates.docs, "employee_card"));
 
 				r.addProperty(ResourceFactory.createProperty(predicates.gost19, "employee"),
 						ResourceFactory.createProperty(predicates.zdb, "person_" + userId));
@@ -1053,9 +1071,9 @@ public class Fetcher
 				{
 					if (a.getName().equalsIgnoreCase("active") && a.getValue().equalsIgnoreCase("true"))
 					{
-						r_user.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r_user.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
-						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "active"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
 								node.createLiteral("true"));
 					}
 
@@ -1107,7 +1125,7 @@ public class Fetcher
 					{
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
-							r.addProperty(ResourceFactory.createProperty(predicates.docs19, "pager"),
+							r.addProperty(ResourceFactory.createProperty(predicates.docs, "pager"),
 									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("phone"))
 					{
@@ -1133,12 +1151,12 @@ public class Fetcher
 							System.out.println("dep is null for user (id = " + userId + ")");
 						else
 						{
-							r.addProperty(ResourceFactory.createProperty(predicates.docs19, "department"),
+							r.addProperty(ResourceFactory.createProperty(predicates.docs, "unit"),
 									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
 
-							write_add_info_of_attribute(predicates.zdb, "doc_" + userId, predicates.docs19,
-									"department", predicates.zdb, "dep_" + department.getExtId(), predicates.swrc,
-									"name", department.getNameRu(), node);
+							write_add_info_of_attribute(predicates.zdb, "doc_" + userId, predicates.docs, "unit",
+									predicates.zdb, "dep_" + department.getExtId(), predicates.swrc, "name",
+									department.getNameRu(), node);
 						}
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))
@@ -1182,11 +1200,11 @@ public class Fetcher
 						// a.getValue(), true, out);
 					} else if (a.getName().equalsIgnoreCase("postRu"))
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "position"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "position"),
 								node.createLiteral(a.getValue(), "ru"));
 					} else if (a.getName().equalsIgnoreCase("postEn"))
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs19, "position"),
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "position"),
 								node.createLiteral(a.getValue(), "en"));
 					} else if (a.getName().equalsIgnoreCase("administrator"))
 					{

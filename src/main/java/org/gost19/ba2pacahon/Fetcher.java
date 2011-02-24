@@ -56,21 +56,21 @@ public class Fetcher
 	private static OrganizationUtil organizationUtil;
 	private static String user_docflow = "541e2793-abc4-437a-9c71-6a1ac0434acf";
 
-	private static HashMap<String, String> isGroup;
+	private static HashMap<String, String> group__Id_name;
 
 	public static void main(String[] args) throws Exception
 	{
-		isGroup = new HashMap<String, String>();
+		group__Id_name = new HashMap<String, String>();
 		// это не организации и не подразделения, это группы:
-		isGroup.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
-		isGroup.put("bbee1427-9362-4a8b-8056-4ba4b772a5a0", "Другие_Others");
-		isGroup.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
-		isGroup.put("b0569cc4-4cd5-4aab-827b-4bcc61371ab9", "Проект 'Новый Взгляд'");
-		isGroup.put("3ac5dbf1-9281-4f5e-93a5-b41657223ce6", "Холдинг");
-		isGroup.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
-		isGroup.put("09fb4c26-b7f6-441d-9924-deda3685bb9d", "Magnetico");
-		isGroup.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
-		isGroup.put("0056f4df-e72c-4c4a-82cb-a1ac752a615e", "Структура");
+		group__Id_name.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
+		group__Id_name.put("bbee1427-9362-4a8b-8056-4ba4b772a5a0", "Другие_Others");
+		group__Id_name.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
+		group__Id_name.put("b0569cc4-4cd5-4aab-827b-4bcc61371ab9", "Проект 'Новый Взгляд'");
+		group__Id_name.put("3ac5dbf1-9281-4f5e-93a5-b41657223ce6", "Холдинг");
+		group__Id_name.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
+		group__Id_name.put("09fb4c26-b7f6-441d-9924-deda3685bb9d", "Magnetico");
+		group__Id_name.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
+		group__Id_name.put("0056f4df-e72c-4c4a-82cb-a1ac752a615e", "Структура");
 
 		// exclude_code.put("$parentDocumentId", "Y");
 		{
@@ -827,12 +827,12 @@ public class Fetcher
 			List<Department> deps = organizationUtil.getDepartments();
 
 			System.out.print(deps);
-			
+
 			ArrayList<String> excludeNode = new ArrayList<String>();
 			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ СПЕЦВЫЗОВА
-//			excludeNode.add("1146725963873");
-//			excludeNode.add("1000");
-//			excludeNode.add("123456");
+			// excludeNode.add("1146725963873");
+			// excludeNode.add("1000");
+			// excludeNode.add("123456");
 
 			// находим родителей для всех подразделений
 			int buCounter = 0;
@@ -897,7 +897,7 @@ public class Fetcher
 			{
 				ii++;
 
-				if (department.getExtId() == null || department.getExtId().length() == 1)
+				if (department.getExtId() == null)
 				{
 					System.out.println("exclude node:" + department.getExtId());
 					continue;
@@ -909,23 +909,26 @@ public class Fetcher
 					continue;
 				}
 
-				if (isGroup.get(department.getId()) != null)
-				{
-					// это группа
-					deps.size();
-					
-				}
-				
 				String parent = childToParent.get(department.getExtId());
 				boolean isOrganization = false;
+				boolean isDepartment = false;
+				boolean isGroup = false;
 
-				if (parent == null || parent.length() == 1)
+				if (group__Id_name.get(department.getId()) != null)
+				{
+					isGroup = true;
+				} else if (parent == null || parent.length() == 1)
+				{
 					isOrganization = true;
+				} else
+				{
+					isDepartment = true;
+				}
 
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
 
-				if (isOrganization == false)
+				if (isDepartment == true)
 				{
 					System.out.println(ii + " add department " + department.getNameRu());
 
@@ -958,7 +961,7 @@ public class Fetcher
 								node.createLiteral(department.getNameEn(), "en"));
 					}
 
-					r.addProperty(ResourceFactory.createProperty(predicates.docs, "department"),
+					r.addProperty(ResourceFactory.createProperty(predicates.docs, "unit"),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "organization"),
@@ -969,7 +972,7 @@ public class Fetcher
 
 					if (parent != null && parent.length() > 1)
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "parentDepartment"),
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "parentUnit"),
 								ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
 
 						write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs,
@@ -977,7 +980,7 @@ public class Fetcher
 								departmentsOfExtIdMap.get(parent).getNameRu(), node);
 					}
 
-				} else
+				} else if (isOrganization)
 				{
 					System.out.println(ii + " add organization " + department.getNameRu());
 
@@ -1015,6 +1018,56 @@ public class Fetcher
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs, "organization"),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
+				} else if (isGroup)
+				{
+
+					System.out.println(ii + " add group " + department.getNameRu());
+
+					Resource r_department = node.createResource(predicates.zdb + "group_" + department.getExtId());
+					r_department.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+							ResourceFactory.createProperty(predicates.docs, "Group"));
+
+					if (department.isActive())
+					{
+						r_department.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
+								node.createLiteral("true"));
+					}
+
+					Resource r = node.createResource(predicates.zdb + "doc_" + department.getId());
+					r.addProperty(ResourceFactory.createProperty(predicates.rdf, "type"),
+							ResourceFactory.createProperty(predicates.docs, "group_card"));
+
+					if (department.isActive())
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.docs, "active"),
+								node.createLiteral("true"));
+					}
+
+					r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+							node.createLiteral(department.getNameRu(), "ru"));
+
+					if (department.getNameEn() != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc, "name"),
+								node.createLiteral(department.getNameEn(), "en"));
+					}
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs, "unit"),
+							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
+							node.createLiteral(department.getExtId()));
+
+					if (parent != null && parent.length() > 1)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "parentUnit"),
+								ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
+
+						write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs,
+								"parentUnit", predicates.zdb, "dep_" + parent, predicates.swrc, "name",
+								departmentsOfExtIdMap.get(parent).getNameRu(), node);
+					}
+
 				}
 
 				// TODO возможно нужно будет записать и детишек
@@ -1041,7 +1094,7 @@ public class Fetcher
 			for (EntityType userEntity : list)
 			{
 				ii++;
-				
+
 				if (ii % 1000 == 0)
 					Thread.sleep(1000);
 

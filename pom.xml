@@ -27,6 +27,8 @@
             <groupId>ru.magnetosoft.bigarchive.client.web</groupId>
             <version>0.14.75-SNAPSHOT</version>
         </dependency>
+        
+        
         <dependency>
             <groupId>ru.magnetosoft.magnet</groupId>
             <artifactId>magnet-commons-client</artifactId>

@@ -22,7 +22,7 @@ public class predicates
 
 	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
 			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
-			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
+			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
 			+ "> .\n" + "@prefix docs: <" + docs + "> .\n";
 
 	public static final String ns_f_user_onto = "http://user-onto.org";
@@ -39,7 +39,7 @@ public class predicates
 	public static final String _auth = "auth:";
 	public static final String _zdb = "zdb:";
 
-	public static final String _user_onto = "user_onto";
+	public static final String _user_onto = "user_onto:";
 
 	public static final String f_user_onto = "http://user-onto.org";
 	public static final String f_swrc = "http://swrc.ontoware.org/ontology-07";
@@ -82,6 +82,7 @@ public class predicates
 	public static final String dc__date = dc + "date";
 
 	public static final String swrc__Department = swrc + "Department";
+	public static final String swrc__Employee = swrc + "Employee";
 	public static final String swrc__Person = swrc + "Person";
 	public static final String swrc__name = swrc + "name";
 	public static final String swrc__lastName = swrc + "lastName";
@@ -98,7 +99,7 @@ public class predicates
 	public static final String swrc__number = swrc + "number";
 	public static final String swrc__note = swrc + "note";
 
-	public static final String gost19__middlename = gost19 + "middlename";
+	public static final String gost19__middleName = gost19 + "middleName";
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
 
 	public static final String docs__Group = docs + "Group";
@@ -112,6 +113,7 @@ public class predicates
 	public static final String docs__employee_card = docs + "employee_card";
 	public static final String docs__employee = docs + "employee";
 	public static final String docs__organization_card = docs + "organization_card";
+	public static final String docs__group_card = docs + "group_card";
 	public static final String docs__pager = docs + "pager";
 	public static final String docs__carbon_copy = docs + "carbon_copy";
 	public static final String docs__dateInterval = docs + "dateInterval";
@@ -122,6 +124,7 @@ public class predicates
 	public static final String docs__to = docs + "to";
 	public static final String docs__position = docs + "position";
 	public static final String docs__active = docs + "active";
+	public static final String docs__actual = docs + "actual";
 
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";
@@ -137,6 +140,7 @@ public class predicates
 	{
 		if (prefixs.isEmpty())
 		{
+			prefixs.put("user_onto", user_onto);			
 			prefixs.put("rdf", rdf);
 			prefixs.put("rdfs", rdfs);
 			prefixs.put("msg", msg);
@@ -146,6 +150,9 @@ public class predicates
 			prefixs.put("gost19", gost19);
 			prefixs.put("query", query);
 			prefixs.put("auth", auth);
+			prefixs.put("dc", dc);			
+			prefixs.put("owl", owl);			
+			prefixs.put("xsd", xsd);			
 		}
 
 		return prefixs;

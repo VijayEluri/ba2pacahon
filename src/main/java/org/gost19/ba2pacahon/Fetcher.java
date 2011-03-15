@@ -52,7 +52,8 @@ public class Fetcher
 	private static String exclude_codes = "$comment, $private, $authorId, $defaultRepresentation";
 	private static HashMap<String, EntityType> userUri__userObj = new HashMap<String, EntityType>();
 	private static OrganizationUtil organizationUtil;
-	// private static String user_docflow = "541e2793-abc4-437a-9c71-6a1ac0434acf";
+	// private static String user_docflow =
+	// "541e2793-abc4-437a-9c71-6a1ac0434acf";
 
 	private static HashMap<String, String> group__Id_name;
 
@@ -106,12 +107,16 @@ public class Fetcher
 			code_onto.put("Комментарий", predicates.swrc__note);
 
 			/*
-			 * [Связанные документы]:19 [Цех]:15 [Дата регистрации]:13 [status]:13 [Разработчик]:12 [Объект ТОРО]:11
-			 * [Конструкторская заявка]:10 [Раздел]:10 [Регистрационный номер]:9 [Тип работ]:9 [status_history]:9
-			 * [Подписывающий]:9 [Проект]:8 [Дата старта маршрута]:8 [Дата получения]:8 [Количество листов]:8 [Инв.№]:8
-			 * [Обозначение]:8 [Инициатор]:7 [Лист]:6 [Шифр]:6 [Исполнитель]:5 [Вид документа]:5 [Регистрационный номер
-			 * 1]:5 [Код]:4 [Ответственное лицо]:4 [Список рассылки]:4 [Сопровождающие документы]:3 [Руководитель
-			 * проекта]:3 [Источник финансирования]:3 [Конструкторский проект]:3 [Предмет договора]:3 [Дата
+			 * [Связанные документы]:19 [Цех]:15 [Дата регистрации]:13
+			 * [status]:13 [Разработчик]:12 [Объект ТОРО]:11 [Конструкторская
+			 * заявка]:10 [Раздел]:10 [Регистрационный номер]:9 [Тип работ]:9
+			 * [status_history]:9 [Подписывающий]:9 [Проект]:8 [Дата старта
+			 * маршрута]:8 [Дата получения]:8 [Количество листов]:8 [Инв.№]:8
+			 * [Обозначение]:8 [Инициатор]:7 [Лист]:6 [Шифр]:6 [Исполнитель]:5
+			 * [Вид документа]:5 [Регистрационный номер 1]:5 [Код]:4
+			 * [Ответственное лицо]:4 [Список рассылки]:4 [Сопровождающие
+			 * документы]:3 [Руководитель проекта]:3 [Источник финансирования]:3
+			 * [Конструкторский проект]:3 [Предмет договора]:3 [Дата
 			 * заключения]:3 [Объект]:3
 			 */
 		}
@@ -146,12 +151,18 @@ public class Fetcher
 
 		Resource r = null;
 
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.dc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.f_swrc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.gost19, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.docs, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.user_onto, false);
-		// writeTriplet(predicates.f_user_onto, predicates.rdf__type, predicates.owl__Ontology, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.dc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.f_swrc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.gost19, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.docs, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.user_onto, false);
+		// writeTriplet(predicates.f_user_onto, predicates.rdf__type,
+		// predicates.owl__Ontology, false);
 
 		String docsIdDataQuery = "select objectId FROM objects where isTemplate = 1 and timestamp is null";
 		ResultSet docRecordsRs = connection.createStatement().executeQuery(docsIdDataQuery);
@@ -161,12 +172,15 @@ public class Fetcher
 			String docId = docRecordsRs.getString(1);
 
 			String docDataQuery = "select distinct content FROM objects where objectId = '" + docId
-					+ "' order by timestamp asc";
+					+ "' order by timestamp desc";
 			Statement st1 = connection.createStatement();
 			ResultSet docRecordRs = st1.executeQuery(docDataQuery);
 
+			int count_of_version = 0;
+
 			while (docRecordRs.next())
 			{
+				count_of_version++;
 				String docXmlStr = docRecordRs.getString(1);
 
 				IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
@@ -177,19 +191,16 @@ public class Fetcher
 				String authorId = get(xmlDoc, "authorId", null);
 				String dateCreated = get(xmlDoc, "dateCreated", null);
 				String lastModifiedTime = get(xmlDoc, "dateLastModified", null);
-				String lastEditorId = get(xmlDoc, "lastEditorId", null);
-				String objectType = get(xmlDoc, "objectType", null);
-				String typeId = get(xmlDoc, "typeId", null);
-				String id = get(xmlDoc, "id", null);
+				//				String lastEditorId = get(xmlDoc, "lastEditorId", null);
+				//				String objectType = get(xmlDoc, "objectType", null);
+				//				String typeId = get(xmlDoc, "typeId", null);
+
 				String name = get(xmlDoc, "name", null);
 
-				// XMLGregorianCalendar dateCreated =
-				// documentTypeType.getDateCreated();
-				// XMLGregorianCalendar lastModifiedTime =
-				// documentTypeType.getLastModifiedTime();
+				// XMLGregorianCalendar dateCreated = documentTypeType.getDateCreated();
+				// XMLGregorianCalendar lastModifiedTime = documentTypeType.getLastModifiedTime();
 				// String name = documentTypeType.getName();
-				// String systemInformation =
-				// documentTypeType.getSystemInformation();
+				// String systemInformation = documentTypeType.getSystemInformation();
 
 				if (dateCreated != null && lastModifiedTime != null)
 				{
@@ -219,7 +230,12 @@ public class Fetcher
 				// if (systemInformation != null)
 				// si_elements = systemInformation.split(";");
 
-				r = node.createResource(predicates.user_onto + "template_" + id);
+				String id = get(xmlDoc, "id", null);
+
+				r = node.createResource(predicates.user_onto + "template_" + id + "_v_" + count_of_version);
+
+				r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
+
 				r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
 						ResourceFactory.createProperty(predicates.docs__Document));
 
@@ -268,7 +284,7 @@ public class Fetcher
 							continue;
 						}
 
-						String restrictionId = "template_" + id + "_" + ii;
+						String restrictionId = "template_" + id + "_f_" + ii;
 
 						System.out.println("\n");
 
@@ -530,10 +546,14 @@ public class Fetcher
 
 		IXMLParser parser = XMLParserFactory.createDefaultXMLParser();
 
-		// writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.docs, false);
-		// writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.f_swrc, false);
-		// writeTriplet(predicates.f_zdb, predicates.owl__imports, predicates.gost19, false);
-		// writeTriplet(predicates.f_zdb, predicates.rdf__type, predicates.owl__Ontology, false);
+		// writeTriplet(predicates.f_zdb, predicates.owl__imports,
+		// predicates.docs, false);
+		// writeTriplet(predicates.f_zdb, predicates.owl__imports,
+		// predicates.f_swrc, false);
+		// writeTriplet(predicates.f_zdb, predicates.owl__imports,
+		// predicates.gost19, false);
+		// writeTriplet(predicates.f_zdb, predicates.rdf__type,
+		// predicates.owl__Ontology, false);
 
 		String docsIdDataQuery = "select objectId FROM objects where isTemplate = 0 and timestamp is null";
 		ResultSet docRecordsRs = connection.createStatement().executeQuery(docsIdDataQuery);
@@ -576,7 +596,8 @@ public class Fetcher
 
 					addPersonToDocument(newDocSubj, authorId, predicates.dc__creator);
 
-					// writeTriplet(newDocSubj, predicates.rdf__type, predicates.user_onto + typeId, false);
+					// writeTriplet(newDocSubj, predicates.rdf__type,
+					// predicates.user_onto + typeId, false);
 
 					Vector<IXMLElement> atts = null;
 					atts = xmlDoc.getFirstChildNamed("xmlAttributes").getChildren();
@@ -594,13 +615,24 @@ public class Fetcher
 							if (type.equals("ORGANIZATION"))
 							{
 								/*
-								 * <xmlAttribute> <dateCreated>2010-02-02T09:40:08.862 +03:00</dateCreated>
-								 * <description></description> <multiSelect>true</multiSelect> <name>Кому</name>
-								 * <obligatory>true</obligatory> <organizationTag>user</organizationTag>
-								 * <organizationValue>fb926d69-3a49-4842-a2e2-e592fd301073</organizationValue>
-								 * <type>ORGANIZATION</type> <computationalConfirm>NONE</computationalConfirm>
-								 * <computationalReadonly>false</computationalReadonly> <code>Кому</code>
-								 * <xmlAttributes/> </xmlAttribute>
+								 * <xmlAttribute>
+								 * <dateCreated>2010-02-02T09:40:08.862
+								 * +03:00</dateCreated>
+								 * <description></description>
+								 * <multiSelect>true</multiSelect>
+								 * <name>Кому</name>
+								 * <obligatory>true</obligatory>
+								 * <organizationTag>user</organizationTag>
+								 * <organizationValue
+								 * >fb926d69-3a49-4842-a2e2-e592fd301073
+								 * </organizationValue>
+								 * <type>ORGANIZATION</type>
+								 * <computationalConfirm
+								 * >NONE</computationalConfirm>
+								 * <computationalReadonly
+								 * >false</computationalReadonly>
+								 * <code>Кому</code> <xmlAttributes/>
+								 * </xmlAttribute>
 								 */
 								String organizationValue = get(att_list_element, "organizationValue", null);
 								String organizationTag = get(att_list_element, "organizationTag", null);
@@ -618,8 +650,10 @@ public class Fetcher
 
 								String textValue = get(att_list_element, "textValue", null);
 
-								// if (textValue != null && textValue.length() > 0)
-								// writeTriplet(newDocSubj, onto_code, textValue, true);
+								// if (textValue != null && textValue.length() >
+								// 0)
+								// writeTriplet(newDocSubj, onto_code,
+								// textValue, true);
 							} else if (type.equals("LINK"))
 							{
 								String value = get(att_list_element, "linkValue", null);
@@ -690,7 +724,8 @@ public class Fetcher
 			System.out.print(deps);
 
 			ArrayList<String> excludeNode = new ArrayList<String>();
-			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ СПЕЦВЫЗОВА
+			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
+												// СПЕЦВЫЗОВА
 			// excludeNode.add("1146725963873");
 			// excludeNode.add("1000");
 			// excludeNode.add("123456");
@@ -1074,13 +1109,15 @@ public class Fetcher
 					{
 						String value = a.getValue();
 						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// writeTriplet(predicates.zdb + "doc_" + userId,
+						// predicates.swrc__phone, a.getValue(), true,
 						// out);
 					} else if (a.getName().equalsIgnoreCase("phoneExt"))
 					{
 						String value = a.getValue();
 						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId, predicates.swrc__phone, a.getValue(), true,
+						// writeTriplet(predicates.zdb + "doc_" + userId,
+						// predicates.swrc__phone, a.getValue(), true,
 						// out);
 					} else if (a.getName().equalsIgnoreCase("mobile"))
 					{
@@ -1149,7 +1186,8 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.auth__login),
 							node.createLiteral(domainName));
 
-					// writeTriplet(predicates.zdb + "person_" + userId, predicates.auth__credential, password, true,
+					// writeTriplet(predicates.zdb + "person_" + userId,
+					// predicates.auth__credential, password, true,
 					// out_auth_data);
 				}
 
@@ -1159,7 +1197,8 @@ public class Fetcher
 			end = System.currentTimeMillis();
 			System.out.println("Finished in " + ((end - start) / 1000) + " s. for " + list.size() + " persons.");
 			/*
-			 * System.out.println("Querying speed  = " + list.size() / ((end - start + 1) / 1000) + " persons/s");
+			 * System.out.println("Querying speed  = " + list.size() / ((end -
+			 * start + 1) / 1000) + " persons/s");
 			 */
 
 			System.out.println("-----------------------------------------");
@@ -1194,12 +1233,14 @@ public class Fetcher
 		// writeTriplet(DocUri, attUri, PersonUri, false);
 		String newNodeId = DocUri + attUri;
 
-		// writeTriplet(newNodeId, predicates.rdf__type, predicates.rdf__Statement, false);
+		// writeTriplet(newNodeId, predicates.rdf__type,
+		// predicates.rdf__Statement, false);
 		// writeTriplet(newNodeId, predicates.rdf__object, PersonUri, false);
 		// writeTriplet(newNodeId, predicates.rdf__subject, DocUri, false);
 		// writeTriplet(newNodeId, predicates.rdf__predicate, attUri, false);
 
-		// writeTriplet(newNodeId, predicates.swrc__firstName, "репрезентатионвалуес", false);
+		// writeTriplet(newNodeId, predicates.swrc__firstName,
+		// "репрезентатионвалуес", false);
 	}
 
 	private static void addPersonToDocument(String DocUri, String PersonId, String attUri) throws Exception
@@ -1210,7 +1251,8 @@ public class Fetcher
 
 		String newNodeId = DocUri + attUri;
 
-		// writeTriplet(newNodeId, predicates.rdf__type, predicates.rdf__Statement, false);
+		// writeTriplet(newNodeId, predicates.rdf__type,
+		// predicates.rdf__Statement, false);
 		// writeTriplet(newNodeId, predicates.rdf__object, PersonUri, false);
 		// writeTriplet(newNodeId, predicates.rdf__subject, DocUri, false);
 		// writeTriplet(newNodeId, predicates.rdf__predicate, attUri, false);
@@ -1230,11 +1272,14 @@ public class Fetcher
 
 				if (name.equalsIgnoreCase("firstNameRu"))
 				{
-					// if (!(PersonId.equals(user_docflow) && (value == null || value.length() == 0)))
-					// writeTriplet(newNodeId, predicates.swrc__firstName, value, false);
+					// if (!(PersonId.equals(user_docflow) && (value == null ||
+					// value.length() == 0)))
+					// writeTriplet(newNodeId, predicates.swrc__firstName,
+					// value, false);
 				} else if (name.equalsIgnoreCase("surnameRu"))
 				{
-					// writeTriplet(newNodeId, predicates.swrc__lastName, value, false);
+					// writeTriplet(newNodeId, predicates.swrc__lastName, value,
+					// false);
 				}
 			}
 		} else
@@ -1253,7 +1298,8 @@ public class Fetcher
 			documentTypeId = properties.getProperty("documentTypeId", "");
 			ticketId = properties.getProperty("sessionTicketId", "");
 			SEARCH_URL = properties.getProperty("searchUrl", "");
-			// DOCUMENT_SERVICE_URL = properties.getProperty("documentsUrl", "");
+			// DOCUMENT_SERVICE_URL = properties.getProperty("documentsUrl",
+			// "");
 			// fake = new Boolean(properties.getProperty("fake", "false"));
 			pathToDump = properties.getProperty("pathToDump");
 			dbUser = properties.getProperty("dbUser", "ba");

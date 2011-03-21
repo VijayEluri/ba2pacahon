@@ -80,6 +80,7 @@ public class predicates
 	public static final String dc__type = dc + "type";
 	public static final String dc__description = dc + "description";
 	public static final String dc__date = dc + "date";
+	public static final String dc__hasPart = dc + "hasPart";
 
 	public static final String swrc__Department = swrc + "Department";
 	public static final String swrc__Employee = swrc + "Employee";
@@ -101,6 +102,7 @@ public class predicates
 
 	public static final String gost19__middleName = gost19 + "middleName";
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
+	public static final String gost19__isRelatedTo = gost19 + "isRelatedTo";
 
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";

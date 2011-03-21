@@ -87,6 +87,7 @@ public class Fetcher
 			code_onto.put("name", predicates.swrc__name);
 			code_onto.put("Полное название", predicates.swrc__name);
 			code_onto.put("Тема", predicates.dc__subject);
+			code_onto.put("Subject/Тема", predicates.dc__subject);
 			code_onto.put("Заголовок", predicates.dc__title);
 			code_onto.put("Тип", predicates.dc__type);
 			code_onto.put("Подразделение", predicates.docs__unit);
@@ -130,7 +131,7 @@ public class Fetcher
 		PacahonClient pacahon_client = new PacahonClient(null);
 		String ticket = pacahon_client.get_ticket("user", "9cXsvbvu8=");
 
-		// fetchOrganization(pacahon_client, ticket);
+		//fetchOrganization(pacahon_client, ticket);
 		fetchDocumentTypes(pacahon_client, ticket);
 		// walkOnDocuments(pacahon_client, ticket);
 
@@ -146,11 +147,6 @@ public class Fetcher
 
 		HashMap<String, Integer> code_stat = new HashMap<String, Integer>();
 
-		Model node = ModelFactory.createDefaultModel();
-		node.setNsPrefixes(predicates.getPrefixs());
-
-		Resource r = null;
-
 		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
 		// predicates.dc, false);
 		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
@@ -164,12 +160,13 @@ public class Fetcher
 		// writeTriplet(predicates.f_user_onto, predicates.rdf__type,
 		// predicates.owl__Ontology, false);
 
-		String docsIdDataQuery = "select objectId FROM objects where isTemplate = 1 and timestamp is null";
-		ResultSet docRecordsRs = connection.createStatement().executeQuery(docsIdDataQuery);
+		ResultSet templatesRs = connection.createStatement().executeQuery(
+				"select objectId FROM objects where isTemplate = 1 and timestamp is null");
 
-		while (docRecordsRs.next())
+		while (templatesRs.next())
 		{
-			String docId = docRecordsRs.getString(1);
+			String docId = templatesRs.getString(1);
+			System.out.println("templateId = " + docId);
 
 			String docDataQuery = "select distinct content FROM objects where objectId = '" + docId
 					+ "' order by timestamp desc";
@@ -180,6 +177,11 @@ public class Fetcher
 
 			while (docRecordRs.next())
 			{
+				Model node = ModelFactory.createDefaultModel();
+				node.setNsPrefixes(predicates.getPrefixs());
+
+				Resource r = null;
+
 				count_of_version++;
 				String docXmlStr = docRecordRs.getString(1);
 
@@ -217,7 +219,7 @@ public class Fetcher
 				if (dateCreated == null)
 					activeStatusLabel = "удален";
 
-				String draftStatusLabel = "";
+				//String draftStatusLabel = "";
 				// if (documentTypeType.isInDraftState() == true)
 				// draftStatusLabel = "черновик";
 
@@ -231,10 +233,17 @@ public class Fetcher
 				// si_elements = systemInformation.split(";");
 
 				String id = get(xmlDoc, "id", null);
+				String tmplate_id = "template_" + id + "_v_" + count_of_version;
 
-				r = node.createResource(predicates.user_onto + "template_" + id + "_v_" + count_of_version);
-
+				r = node.createResource(predicates.user_onto + tmplate_id);
+				
 				r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
+				
+				if (count_of_version == 1)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__actual),
+							node.createLiteral("true"));					
+				}
 
 				r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
 						ResourceFactory.createProperty(predicates.docs__Document));
@@ -284,13 +293,22 @@ public class Fetcher
 							continue;
 						}
 
-						String restrictionId = "template_" + id + "_f_" + ii;
+						String restrictionId = "template_" + id + "_v_" + count_of_version + "_f_" + ii;
 
 						System.out.println("\n");
 
 						Resource rr = node.createResource(predicates.user_onto + restrictionId);
 						rr.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 								ResourceFactory.createProperty(predicates.owl__Restriction));
+
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__isRelatedTo),
+								node.createProperty(predicates.docs__Document));
+
+						rr.addProperty(ResourceFactory.createProperty(predicates.gost19__isRelatedTo),
+								node.createProperty(predicates.docs__Document));
+
+						rr.addProperty(ResourceFactory.createProperty(predicates.dc__hasPart),
+								node.createProperty(predicates.user_onto, tmplate_id));
 
 						r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
 								node.createProperty(predicates.user_onto, restrictionId));
@@ -1432,7 +1450,7 @@ public class Fetcher
 
 			this_code_in_onto = predicates.user_onto
 					+ Translit.toTranslit(code).replace(' ', '_').replace('\'', 'j').replace('№', 'N')
-							.replace(',', '_').replace('(', '_').replace(')', '_').replace('.', '_');
+							.replace(',', '_').replace('(', '_').replace(')', '_').replace('.', '_').replace('-', '_');
 
 		}
 

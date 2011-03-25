@@ -3,9 +3,8 @@ package org.gost19.ba2pacahon;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -166,9 +164,9 @@ public class Fetcher
 		while (templatesRs.next())
 		{
 			String docId = templatesRs.getString(1);
-			System.out.println("templateId = " + docId);
+			//			System.out.println("templateId = " + docId);
 
-			String docDataQuery = "select distinct content FROM objects where objectId = '" + docId
+			String docDataQuery = "select distinct content, kindOf, timestamp" + " FROM objects where objectId = '" + docId
 					+ "' order by timestamp desc";
 			Statement st1 = connection.createStatement();
 			ResultSet docRecordRs = st1.executeQuery(docDataQuery);
@@ -184,8 +182,13 @@ public class Fetcher
 
 				count_of_version++;
 				String docXmlStr = docRecordRs.getString(1);
+				int kindOf = docRecordRs.getInt(2);
+				
+				Object timestamp = docRecordRs.getObject(3);
 
 				IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
+//				System.out.println(docXmlStr);
+
 				parser.setReader(reader);
 				IXMLElement xmlDoc = (IXMLElement) parser.parse(true);
 				reader.close();
@@ -194,10 +197,18 @@ public class Fetcher
 				String dateCreated = get(xmlDoc, "dateCreated", null);
 				String lastModifiedTime = get(xmlDoc, "dateLastModified", null);
 				//				String lastEditorId = get(xmlDoc, "lastEditorId", null);
-				//				String objectType = get(xmlDoc, "objectType", null);
-				//				String typeId = get(xmlDoc, "typeId", null);
+				
+				
+				String objectType = get(xmlDoc, "objectType", null);
+				//String typeId = get(xmlDoc, "typeId", null);
+				String active = get(xmlDoc, "active", null);
 
 				String name = get(xmlDoc, "name", null);
+				System.out.println(name);
+				System.out.println("							" + lastModifiedTime);
+
+				String systemInformation = get(xmlDoc, "systemInformation", null);
+				//				System.out.println("systemInformation = [" + systemInformation + "]");
 
 				// XMLGregorianCalendar dateCreated = documentTypeType.getDateCreated();
 				// XMLGregorianCalendar lastModifiedTime = documentTypeType.getLastModifiedTime();
@@ -208,16 +219,16 @@ public class Fetcher
 				{
 					if (dateCreated.equals(lastModifiedTime))
 					{
-						System.out.println("dateCreated == lastModifiedTime");
+						//						System.out.println("dateCreated == lastModifiedTime");
 					} else
 					{
-						System.out.println("dateCreated != lastModifiedTime");
+						//						System.out.println("dateCreated != lastModifiedTime");
 					}
 				}
 
-				String activeStatusLabel = "";
-				if (dateCreated == null)
-					activeStatusLabel = "удален";
+				//				String activeStatusLabel = "";
+				//				if (dateCreated == null)
+				//					activeStatusLabel = "удален";
 
 				//String draftStatusLabel = "";
 				// if (documentTypeType.isInDraftState() == true)
@@ -233,16 +244,49 @@ public class Fetcher
 				// si_elements = systemInformation.split(";");
 
 				String id = get(xmlDoc, "id", null);
-				String tmplate_id = "template_" + id + "_v_" + count_of_version;
+
+				String tmplate_id = null;
+
+				if (objectType.equals("DICTIONARY"))
+				{
+					tmplate_id = "tmplDict_" + id + "_v_" + count_of_version;
+				} else
+				{
+					tmplate_id = "template_" + id + "_v_" + count_of_version;
+				}
 
 				r = node.createResource(predicates.user_onto + tmplate_id);
-				
+
 				r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
-				
-				if (count_of_version == 1)
+
+				if (systemInformation != null)
 				{
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__actual),
-							node.createLiteral("true"));					
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19__representation),
+							node.createLiteral(systemInformation));
+				}
+
+				if (kindOf == 0)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
+							node.createLiteral("user_template"));
+				} else if (kindOf == 1)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
+							node.createLiteral("dictionary_template"));
+				} else if (kindOf == 3)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
+							node.createLiteral("report_form_template"));
+				}
+
+				if (timestamp == null)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__actual), node.createLiteral("true"));
+				}
+
+				if (active.equals("true"))
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__active), node.createLiteral("true"));
 				}
 
 				r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
@@ -286,16 +330,29 @@ public class Fetcher
 
 						String att_name = get(att_list_element, "name", "");
 
+						if (att_name.equals("$comment"))
+						{
+							String textValue = get(att_list_element, "textValue", null);
+
+							if (textValue != null)
+							{
+								r.addProperty(ResourceFactory.createProperty(predicates.rdfs__comment),
+										node.createLiteral(textValue, "ru"));
+							}
+
+							continue;
+						}
+
 						if (exclude_codes.indexOf(att_name) >= 0)
 						{
-							System.out.println("\n	att_name=[" + att_name + "] is skipped");
+							//							System.out.println("\n	att_name=[" + att_name + "] is skipped");
 
 							continue;
 						}
 
 						String restrictionId = "template_" + id + "_v_" + count_of_version + "_f_" + ii;
 
-						System.out.println("\n");
+						//						System.out.println("\n");
 
 						Resource rr = node.createResource(predicates.user_onto + restrictionId);
 						rr.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -325,7 +382,7 @@ public class Fetcher
 
 						String code = get(att_list_element, "code", null);
 
-						System.out.println("	code=[" + code + "]");
+						//						System.out.println("	code=[" + code + "]");
 
 						// подсчет частоты встречаемости code
 						Integer count = code_stat.get(code);
@@ -342,9 +399,23 @@ public class Fetcher
 						rr.addProperty(ResourceFactory.createProperty(predicates.owl__onProperty),
 								node.createProperty(this_code_in_onto));
 
+						rr.addProperty(ResourceFactory.createProperty(predicates.dc__identifier),
+								node.createLiteral(code));
+
 						code_stat.put(code, count);
 
 						String descr = get(att_list_element, "description", "");
+
+						if (descr.length() > 1)
+						{
+							rr.addProperty(ResourceFactory.createProperty(predicates.gost19__representation),
+									node.createLiteral(descr));
+						}
+
+						//						System.out.println("att_description=[" + descr + "]");
+						//						computationalConfirm
+						//						computationalReadonly
+						//						computationalRuleName					
 
 						String multi_select_label = "";
 						String obligatory_label = "";
@@ -410,12 +481,16 @@ public class Fetcher
 
 								if (dictionaryIdValue != null)
 								{
-									System.out.println("dictionaryIdValue = " + dictionaryIdValue);
-									obj_owl__allValuesFrom = predicates.user_onto + dictionaryIdValue;
-								}
+									//									System.out.println("dictionaryIdValue = " + dictionaryIdValue);
+									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + id + "_v_1";
 
+									//									r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
+									//											node.createLiteral("dictionary_template"));									
+								}
 							} else
+							{
 								obj_owl__allValuesFrom = predicates.docs__Document;
+							}
 
 							if (descr.indexOf("$composition") >= 0)
 							{
@@ -432,7 +507,7 @@ public class Fetcher
 										{
 											String data = tmpa[1];
 
-											obj_owl__allValuesFrom = predicates.user_onto + id;
+											obj_owl__allValuesFrom = predicates.user_onto + "tt" + id;
 										}
 									}
 									if (compz.indexOf("$composition") >= 0)
@@ -473,7 +548,7 @@ public class Fetcher
 						} else if (type.equals("NUMBER"))
 						{
 							typeLabel = "number";
-							obj_owl__allValuesFrom = predicates.xsd__integer;
+							obj_owl__allValuesFrom = predicates.xsd__decimal;
 						} else if (type.equals("ORGANIZATION"))
 						{
 							typeLabel = "organization";
@@ -522,14 +597,25 @@ public class Fetcher
 						} else if (type.equals("TEXT"))
 						{
 							typeLabel = "text";
-							rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
-									ResourceFactory.createProperty(predicates.xsd__string));
+							obj_owl__allValuesFrom = predicates.xsd__string;
 						}
 
-						System.out.println("	att_name=[" + att_name + "]:" + typeLabel + " " + obligatory_label + " "
-								+ multi_select_label);
-						System.out.println("	description=[" + descr + "]");
+						if (obj_owl__allValuesFrom != null)
+						{
+							try
+							{
+								rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
+										ResourceFactory.createProperty(obj_owl__allValuesFrom));
+							} catch (Exception ex)
+							{
+								throw ex;
+							}
+						}
 
+						//						System.out.println("	att_name=[" + att_name + "]:" + typeLabel + " " + obligatory_label + " "
+						//								+ multi_select_label);
+						//						System.out.println("	description=[" + descr + "]");
+						//
 					}
 					pacahon_client.put(ticket, node);
 				}
@@ -539,23 +625,16 @@ public class Fetcher
 			st1.close();
 
 		}
-
-		System.out.println("\ncode entry stat");
-		for (int ii = 20; ii > 0; ii--)
-		{
-			for (Entry<String, Integer> ee : code_stat.entrySet())
-			{
-				if (ee.getValue() == ii)
-					System.out.println("[" + ee.getKey() + "]:" + ee.getValue());
-			}
-		}
-
-		System.out.println("\ncode -> onto");
-		for (Entry<String, String> ee : old_code__new_code.entrySet())
-		{
-			System.out.println("[" + ee.getKey() + "]->[" + ee.getValue() + "]");
-		}
-
+		/*
+		 * System.out.println("\ncode entry stat"); for (int ii = 20; ii > 0;
+		 * ii--) { for (Entry<String, Integer> ee : code_stat.entrySet()) { if
+		 * (ee.getValue() == ii) System.out.println("[" + ee.getKey() + "]:" +
+		 * ee.getValue()); } }
+		 * 
+		 * System.out.println("\ncode -> onto"); for (Entry<String, String> ee :
+		 * old_code__new_code.entrySet()) { System.out.println("[" + ee.getKey()
+		 * + "]->[" + ee.getValue() + "]"); }
+		 */
 	}
 
 	private static int walkOnDocuments(PacahonClient pacahon_client, String ticket) throws Exception

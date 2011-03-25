@@ -63,15 +63,15 @@ public class predicates
 	public static final String xsd__integer = xsd + "integer";
 	public static final String xsd__nonNegativeInteger = xsd + "nonNegativeInteger";
 
+	public static final String rdf__Statement = rdf + "Statement";
+	public static final String rdfs__Class = rdfs + "Class";
 	public static final String rdf__type = rdf + "type";
 	public static final String rdf__subject = rdf + "subject";
 	public static final String rdf__predicate = rdf + "predicate";
-	public static final String rdf__object = rdf + "object";
-	public static final String rdf__Statement = rdf + "Statement";
-
-	public static final String rdfs__subClassOf = rdfs + "subClassOf";
-	public static final String rdfs__Class = rdfs + "Class";
+	public static final String rdf__object = rdf + "object";	
+	public static final String rdfs__subClassOf = rdfs + "subClassOf";	
 	public static final String rdfs__label = rdfs + "label";
+	public static final String rdfs__comment = rdfs + "comment";
 
 	public static final String dc__creator = dc + "creator";
 	public static final String dc__identifier = dc + "identifier";
@@ -103,6 +103,7 @@ public class predicates
 	public static final String gost19__middleName = gost19 + "middleName";
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
 	public static final String gost19__isRelatedTo = gost19 + "isRelatedTo";
+	public static final String gost19__representation = gost19 + "representation";
 
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";
@@ -127,7 +128,8 @@ public class predicates
 	public static final String docs__position = docs + "position";
 	public static final String docs__active = docs + "active";
 	public static final String docs__actual = docs + "actual";
-
+	public static final String docs__kindOf = docs + "kindOf";
+	
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";
 	public static final String auth__Authenticated = auth + "Authenticated";

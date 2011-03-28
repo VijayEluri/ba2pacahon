@@ -166,8 +166,8 @@ public class Fetcher
 			String docId = templatesRs.getString(1);
 			//			System.out.println("templateId = " + docId);
 
-			String docDataQuery = "select distinct content, kindOf, timestamp" + " FROM objects where objectId = '" + docId
-					+ "' order by timestamp desc";
+			String docDataQuery = "select distinct content, kindOf, timestamp" + " FROM objects where objectId = '"
+					+ docId + "' order by timestamp desc";
 			Statement st1 = connection.createStatement();
 			ResultSet docRecordRs = st1.executeQuery(docDataQuery);
 
@@ -183,11 +183,11 @@ public class Fetcher
 				count_of_version++;
 				String docXmlStr = docRecordRs.getString(1);
 				int kindOf = docRecordRs.getInt(2);
-				
+
 				Object timestamp = docRecordRs.getObject(3);
 
 				IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
-//				System.out.println(docXmlStr);
+				//				System.out.println(docXmlStr);
 
 				parser.setReader(reader);
 				IXMLElement xmlDoc = (IXMLElement) parser.parse(true);
@@ -197,8 +197,7 @@ public class Fetcher
 				String dateCreated = get(xmlDoc, "dateCreated", null);
 				String lastModifiedTime = get(xmlDoc, "dateLastModified", null);
 				//				String lastEditorId = get(xmlDoc, "lastEditorId", null);
-				
-				
+
 				String objectType = get(xmlDoc, "objectType", null);
 				//String typeId = get(xmlDoc, "typeId", null);
 				String active = get(xmlDoc, "active", null);
@@ -329,10 +328,10 @@ public class Fetcher
 						ii++;
 
 						String att_name = get(att_list_element, "name", "");
+						String textValue = get(att_list_element, "textValue", null);
 
 						if (att_name.equals("$comment"))
 						{
-							String textValue = get(att_list_element, "textValue", null);
 
 							if (textValue != null)
 							{
@@ -352,11 +351,17 @@ public class Fetcher
 
 						String restrictionId = "template_" + id + "_v_" + count_of_version + "_f_" + ii;
 
-						//						System.out.println("\n");
+						//						System.out.println("\n");							
 
 						Resource rr = node.createResource(predicates.user_onto + restrictionId);
 						rr.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 								ResourceFactory.createProperty(predicates.owl__Restriction));
+
+						if (textValue != null)
+						{
+							r.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+									node.createLiteral(textValue));
+						}
 
 						r.addProperty(ResourceFactory.createProperty(predicates.gost19__isRelatedTo),
 								node.createProperty(predicates.docs__Document));
@@ -528,7 +533,7 @@ public class Fetcher
 														new_code = renameCodeToOnto(field, null, null);
 
 													rr.addProperty(
-															ResourceFactory.createProperty(predicates.owl__hasValue),
+															ResourceFactory.createProperty(predicates.gost19__take),
 															node.createLiteral(new_code));
 
 													new_code += "";
@@ -567,10 +572,10 @@ public class Fetcher
 								{
 									// для этого типа нужно добавить:
 
-									rr.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+									rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 											ResourceFactory.createProperty(predicates.swrc__lastName));
 
-									rr.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+									rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 											ResourceFactory.createProperty(predicates.swrc__firstName));
 
 									if (organizationTags.length == 1)
@@ -582,7 +587,7 @@ public class Fetcher
 
 								} else if (tag.equals("department"))
 								{
-									rr.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+									rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 											ResourceFactory.createProperty(predicates.swrc__name));
 
 									if (organizationTags.length == 1)

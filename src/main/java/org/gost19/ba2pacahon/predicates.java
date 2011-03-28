@@ -104,6 +104,7 @@ public class predicates
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
 	public static final String gost19__isRelatedTo = gost19 + "isRelatedTo";
 	public static final String gost19__representation = gost19 + "representation";
+	public static final String gost19__take = gost19 + "take";
 
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";

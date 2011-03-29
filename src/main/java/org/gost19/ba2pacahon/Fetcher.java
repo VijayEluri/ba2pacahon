@@ -349,11 +349,12 @@ public class Fetcher
 							continue;
 						}
 
-						String restrictionId = "template_" + id + "_v_" + count_of_version + "_f_" + ii;
+						String restrictionId = predicates.user_onto + "template_" + id + "_v_" + count_of_version
+								+ "_f_" + ii;
 
 						//						System.out.println("\n");							
 
-						Resource rr = node.createResource(predicates.user_onto + restrictionId);
+						Resource rr = node.createResource(restrictionId);
 						rr.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 								ResourceFactory.createProperty(predicates.owl__Restriction));
 
@@ -373,7 +374,7 @@ public class Fetcher
 								node.createProperty(predicates.user_onto, tmplate_id));
 
 						r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
-								node.createProperty(predicates.user_onto, restrictionId));
+								node.createProperty(restrictionId));
 
 						lName = LangString.parse(att_name);
 
@@ -486,8 +487,35 @@ public class Fetcher
 
 								if (dictionaryIdValue != null)
 								{
-									//									System.out.println("dictionaryIdValue = " + dictionaryIdValue);
-									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + id + "_v_1";
+									// тип спраочника
+									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + dictionaryIdValue
+											+ "_v_1";
+
+									String dictionaryNameValue = get(att_list_element, "dictionaryNameValue", null);
+
+									if (dictionaryNameValue != null)
+									{
+										write_add_info_of_attribute(restrictionId, predicates.owl__allValuesFrom,
+												obj_owl__allValuesFrom, predicates.swrc__name, dictionaryNameValue,
+												node);
+									}
+
+									// Значение по умолчанию									
+									String recordIdValue = get(att_list_element, "recordIdValue", null);
+
+									if (recordIdValue != null)
+									{
+										rr.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+												node.createLiteral(recordIdValue));
+									}
+
+									String recordNameValue = get(att_list_element, "recordNameValue", null);
+
+									if (recordNameValue != null)
+									{
+										write_add_info_of_attribute(restrictionId, predicates.owl__hasValue,
+												obj_owl__allValuesFrom, predicates.swrc__name, recordNameValue, node);
+									}
 
 									//									r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
 									//											node.createLiteral("dictionary_template"));									
@@ -512,7 +540,7 @@ public class Fetcher
 										{
 											String data = tmpa[1];
 
-											obj_owl__allValuesFrom = predicates.user_onto + "tt" + id;
+											obj_owl__allValuesFrom = predicates.user_onto + "template_" + id + "_v_1";
 										}
 									}
 									if (compz.indexOf("$composition") >= 0)
@@ -1060,8 +1088,8 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
 
-					write_add_info_of_attribute(predicates.zdb, "doc_" + department.getId(), predicates.docs,
-							"parentUnit", predicates.zdb, "dep_" + parent, predicates.swrc, "name",
+					write_add_info_of_attribute(predicates.zdb + "doc_" + department.getId(),
+							predicates.docs__parentUnit, predicates.zdb + "dep_" + parent, predicates.swrc__name,
 							departmentsOfExtIdMap.get(parent).getNameRu(), node);
 				}
 
@@ -1202,8 +1230,8 @@ public class Fetcher
 							r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
 									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
 
-							write_add_info_of_attribute(predicates.zdb, "doc_" + userId, predicates.docs, "unit",
-									predicates.zdb, "dep_" + department.getExtId(), predicates.swrc, "name",
+							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__unit,
+									predicates.zdb + "dep_" + department.getExtId(), predicates.swrc__name,
 									department.getNameRu(), node);
 						}
 
@@ -1491,11 +1519,10 @@ public class Fetcher
 		}
 	}
 
-	private static void write_add_info_of_attribute(String subject_ns, String subject_id, String predicate_ns,
-			String predicate_id, String object_ns, String object_id, String addInfo_predicate_ns,
-			String addInfo_predicate_id, String addInfo_value, Model node) throws Exception
+	private static void write_add_info_of_attribute(String subject, String predicate, String object,
+			String addInfo_predicate, String addInfo_value, Model node) throws Exception
 	{
-		String addinfo_subject = subject_ns + subject_id + "_add_info_" + System.currentTimeMillis();
+		String addinfo_subject = subject + "_add_info_" + System.currentTimeMillis();
 
 		Resource r_department = node.createResource(addinfo_subject);
 
@@ -1503,16 +1530,15 @@ public class Fetcher
 				ResourceFactory.createProperty(predicates.rdf, "Statement"));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__subject),
-				ResourceFactory.createProperty(subject_ns, subject_id));
+				ResourceFactory.createProperty(subject));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__predicate),
-				ResourceFactory.createProperty(predicate_ns, predicate_id));
+				ResourceFactory.createProperty(predicate));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object),
-				ResourceFactory.createProperty(object_ns, object_id));
+				ResourceFactory.createProperty(object));
 
-		r_department.addProperty(ResourceFactory.createProperty(addInfo_predicate_ns, addInfo_predicate_id),
-				node.createLiteral(addInfo_value));
+		r_department.addProperty(ResourceFactory.createProperty(addInfo_predicate), node.createLiteral(addInfo_value));
 	}
 
 	private static String renameCodeToOnto(String code, String id, String alternativeName)

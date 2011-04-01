@@ -29,22 +29,22 @@
         </dependency>
         
         
-        <dependency>
+<!--        <dependency>
             <groupId>ru.magnetosoft.magnet</groupId>
             <artifactId>magnet-commons-client</artifactId>
-            <version>1.5.15-SNAPSHOT</version>
-        </dependency>
+            <version>1.5.15-SNAPSHOT</version> 
+        </dependency>                          -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <version>4.4</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>ru.magnetosoft.magnet</groupId>
             <artifactId>magnet-messaging</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
-        </dependency>
+            <version>0.0.2-SNAPSHOT</version> 
+        </dependency>                         -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

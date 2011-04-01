@@ -57,6 +57,8 @@ public class Fetcher
 	private static HashMap<String, String> versionId__recordId;
 	private static HashMap<String, String> recordId__versionId;
 
+	private static Map<String, Department> departmentsOfExtIdMap = new HashMap<String, Department>();
+
 	/**
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
 	 */
@@ -195,6 +197,9 @@ public class Fetcher
 						ResourceFactory.createProperty(predicates.rdfs__Class));
 
 				r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
+
+				r.addProperty(ResourceFactory.createProperty(predicates.gost19__version),
+						node.createLiteral(count_of_version + ""));
 
 				if (systemInformation != null)
 				{
@@ -623,16 +628,22 @@ public class Fetcher
 			String docId = docRecordsRs.getString(1);
 			count_documents++;
 
+			int count_of_version = 0;
+
 			String docDataQuery = "select content, kindOf, timestamp, recordId FROM objects where objectId = '" + docId
 					+ "' order by timestamp desc";
 			Statement st1 = connection.createStatement();
 			ResultSet docRecordRs = st1.executeQuery(docDataQuery);
 
-			int count_of_version = 0;
+			if (max_count_versons_of_document < count_of_version)
+				max_count_versons_of_document = count_of_version;
 
 			while (docRecordRs.next())
 			{
+				count_of_version++;
+
 				String docXmlStr = docRecordRs.getString(1);
+				Object timestamp = docRecordRs.getObject(3);
 				String recordId = docRecordRs.getString(4);
 				String id = null;
 
@@ -653,11 +664,6 @@ public class Fetcher
 
 						continue;
 					}
-
-					count_of_version++;
-
-					if (max_count_versons_of_document < count_of_version)
-						max_count_versons_of_document = count_of_version;
 
 					count_documents_with_versions++;
 
@@ -695,14 +701,37 @@ public class Fetcher
 					String tmplRcId = util.getRecordIdOfDocId__OnDate(typeId, date_created, connection);
 					String templateId = recordId__versionId.get(tmplRcId);
 
+					String current_doc_id = null;
+
 					if (objectType.equals("DICTIONARY"))
 					{
-						doc_id = predicates.zdb + "dict_" + id + "_v_" + count_of_version;
-						r = node.createResource(doc_id);
+						doc_id = predicates.zdb + "dict_" + id;
 					} else
 					{
-						doc_id = predicates.zdb + "doc_" + id + "_v_" + count_of_version;
-						r = node.createResource(doc_id);
+						doc_id = predicates.zdb + "doc_" + id;
+					}
+					current_doc_id = doc_id;
+
+					if (timestamp != null)
+					{
+						if (objectType.equals("DICTIONARY"))
+						{
+							doc_id = predicates.zdb + "dict_" + id + "_v_" + count_of_version;
+						} else
+						{
+							doc_id = predicates.zdb + "doc_" + id + "_v_" + count_of_version;
+						}
+					}
+
+					r = node.createResource(doc_id);
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
+							ResourceFactory.createProperty(current_doc_id));
+
+					if (timestamp == null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__volatile),
+								node.createLiteral("true"));
 					}
 
 					try
@@ -718,6 +747,9 @@ public class Fetcher
 
 					recordId__versionId.put(recordId, doc_id);
 					versionId__recordId.put(doc_id, recordId);
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
+							ResourceFactory.createProperty(predicates.docs__Document));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.docs__Document));
@@ -847,7 +879,7 @@ public class Fetcher
 
 			List<Department> deps = organizationUtil.getDepartments();
 
-			System.out.print(deps);
+			//			System.out.print(deps);
 
 			ArrayList<String> excludeNode = new ArrayList<String>();
 			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
@@ -858,7 +890,7 @@ public class Fetcher
 
 			// находим родителей для всех подразделений
 			int buCounter = 0;
-			Map<String, Department> departmentsOfExtIdMap = new HashMap<String, Department>();
+			departmentsOfExtIdMap = new HashMap<String, Department>();
 			// HashMap<String, ArrayList<String>> childs = new HashMap<String,
 			// ArrayList<String>>();
 			HashMap<String, String> childToParent = new HashMap<String, String>();
@@ -962,10 +994,9 @@ public class Fetcher
 
 				if (isDepartment == true)
 				{
-					ouId = predicates.zdb + "dep_" + department.getExtId();
+					ouId = predicates.zdb + "dep_" + department.getId();
 
 					System.out.println(ii + " add department " + department.getNameRu() + ", ouid=" + ouId);
-					;
 
 					r_ou = node.createResource(ouId);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -997,7 +1028,7 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
+							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__organization),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getOrganizationId()));
@@ -1007,7 +1038,7 @@ public class Fetcher
 
 				} else if (isOrganization)
 				{
-					ouId = predicates.zdb + "org_" + department.getExtId();
+					ouId = predicates.zdb + "org_" + department.getId();
 
 					System.out.println(ii + " add organization " + department.getNameRu() + ", ouid=" + ouId);
 
@@ -1048,7 +1079,7 @@ public class Fetcher
 
 				} else if (isGroup)
 				{
-					ouId = predicates.zdb + "group_" + department.getExtId();
+					ouId = predicates.zdb + "group_" + department.getId();
 
 					System.out.println(ii + " add group " + department.getNameRu() + ", ouid=" + ouId);
 
@@ -1234,10 +1265,10 @@ public class Fetcher
 						else
 						{
 							r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
+									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
 
 							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__unit,
-									predicates.zdb + "dep_" + department.getExtId(), predicates.swrc__name,
+									predicates.zdb + "dep_" + department.getId(), predicates.swrc__name,
 									department.getNameRu(), node);
 						}
 
@@ -1358,6 +1389,9 @@ public class Fetcher
 	private static void addLinkToDocument(String docUri, String linkDocId, String attUri, Model node, Resource r)
 			throws Exception
 	{
+		if (linkDocId == null || linkDocId.length() < 2)
+			return;
+
 		String linkDocUri = predicates.zdb + "doc_" + linkDocId;
 
 		r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(linkDocUri));
@@ -1375,7 +1409,7 @@ public class Fetcher
 	private static void addOuToDocument(String docUri, String ouId, String attUri, Model node, Resource r)
 			throws Exception
 	{
-		if (ouId == null || ouId.length() < 1)
+		if (ouId == null || ouId.length() < 2)
 			return;
 
 		String ouUri = predicates.zdb + "person_" + ouId;
@@ -1399,6 +1433,18 @@ public class Fetcher
 					} else if (name.equalsIgnoreCase("surnameRu"))
 					{
 						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__lastName, value, node);
+					} else if (name.equalsIgnoreCase("secondnameRu"))
+					{
+						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.gost19__middleName, value, node);
+					} else if (name.equalsIgnoreCase("postRu"))
+					{
+						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.docs__position, value, node);
+					} else if (name.equalsIgnoreCase("departmentId"))
+					{
+						Department department = departmentsOfExtIdMap.get(value);
+						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name,
+								department.getNameRu(), node);
+
 					}
 				}
 			}
@@ -1635,5 +1681,6 @@ public class Fetcher
 		fetchDocumentTypes(pacahon_client, ticket);
 		fetchDocuments(pacahon_client, ticket);
 
+		Thread.currentThread().sleep(999999999);
 	}
 }

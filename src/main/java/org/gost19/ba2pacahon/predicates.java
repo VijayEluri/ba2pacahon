@@ -111,6 +111,7 @@ public class predicates
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";
 	public static final String docs__document = docs + "document";
+	public static final String docs__source = docs + "source";
 	public static final String docs__FileDescription = docs + "FileDescription";
 	public static final String docs__file = docs + "file";
 	public static final String docs__tumbnail = docs + "tumbnail";

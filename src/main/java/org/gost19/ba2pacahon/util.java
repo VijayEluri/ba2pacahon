@@ -14,40 +14,45 @@ public class util
 	private static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.sss");
 	private static SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-	public static String getRecordIdOfDocId__OnDate(String id, Date date, Connection connection) throws Exception
+	public static String[] getRecordIdAndTemplateIdOfDocId__OnDate(String id, Date date, Connection connection)
+			throws Exception
 	{
+		String result[];
 		if (date == null)
 		{
-			return getRecordIdOfDocId(id, connection);
+			return getRecordIdAndTemplateIdOfDocId(id, connection);
 		}
-		String queryStr = "SELECT recordId FROM objects WHERE objectId = ? AND timestamp <= ? ORDER BY timestamp DESC LIMIT 1";
+		String queryStr = "SELECT recordId, templateId FROM objects WHERE objectId = ? AND timestamp <= ? ORDER BY timestamp DESC LIMIT 1";
 		PreparedStatement ps = connection.prepareStatement(queryStr);
 		ps.setString(1, id);
 		ps.setLong(2, date.getTime());
 		ResultSet rs = ps.executeQuery();
-		String result = null;
 		if (rs.next())
 		{
-			result = rs.getString(1);
-			rs.close();
-			ps.close();
+			result = new String[2];
+			result[0] = rs.getString(1);
+			result[1] = rs.getString(2);
 		} else
 		{
-			result = getRecordIdOfDocId(id, connection);
+			result = getRecordIdAndTemplateIdOfDocId(id, connection);
 		}
+		rs.close();
+		ps.close();
 		return result;
 	}
 
-	public static String getRecordIdOfDocId(String id, Connection connection) throws Exception
+	public static String[] getRecordIdAndTemplateIdOfDocId(String id, Connection connection) throws Exception
 	{
-		String result;
-		String queryStr = "SELECT recordId FROM objects WHERE objectId = ? AND timestamp IS NULL";
+		String result[];
+		String queryStr = "SELECT recordId, templateId FROM objects WHERE objectId = ? AND timestamp IS NULL";
 		PreparedStatement ps = connection.prepareStatement(queryStr);
 		ps.setString(1, id);
 		ResultSet rs = ps.executeQuery();
 		if (rs.next())
 		{
-			result = rs.getString(1);
+			result = new String[2];
+			result[0] = rs.getString(1);
+			result[1] = rs.getString(2);
 		} else
 		{
 			throw new Exception("NoSuchObjectException");

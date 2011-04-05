@@ -87,8 +87,8 @@ public interface AttachmentEndpoint {
      * @param sessionTicketId
      * @return
      *     returns magnetico.ws.attachment.AttachmentType
-     * @throws BigArchiveServerException_Exception
      * @throws AccessDeniedException_Exception
+     * @throws BigArchiveServerException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")

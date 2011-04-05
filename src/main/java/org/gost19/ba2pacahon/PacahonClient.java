@@ -139,21 +139,25 @@ public class PacahonClient
 			pos = result.indexOf("msg:result");
 			if (pos > 0)
 			{
-				int start = result.indexOf("\"\"\"", pos);
-				int stop = result.indexOf("\"\"\"", start + 3);
+				int start = result.indexOf("\"\"", pos);
+				int stop = result.indexOf("\"\"", start + 2);
 
-				result = result.substring(start + 3, stop);
-				result = result.replaceAll("\\\\\"", "\"");
-				
-				Model message = ModelFactory.createDefaultModel();
+				if (stop > 0)
+				{
+					result = result.substring(start + 2, stop);
+					result = result.replaceAll("\\\\\"", "\"");
 
-				result = predicates.all_prefixs + result;
-				StringReader sr = new StringReader(result);
-				RDFReader r = message.getReader("N3");
-				String baseURI = "";
-				r.read(message, sr, baseURI);
-				sr.close();
-				return message;
+					Model message = ModelFactory.createDefaultModel();
+
+					result = predicates.all_prefixs + result;
+					StringReader sr = new StringReader(result);
+					RDFReader r = message.getReader("N3");
+					String baseURI = "";
+					r.read(message, sr, baseURI);
+					sr.close();
+					return message;
+				} else
+					return null;
 			}
 
 		}

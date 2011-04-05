@@ -16,4 +16,3 @@ pwd
 ./pacahon_tester.py test009
 cd $mdir
 java -cp ./target/ba2pacahon.jar -Djava.library.path=/usr/local/lib org.gost19.ba2pacahon.Fetcher>convert.log
-#org.gost19.ba2pacahon.Fetcher doc>>export_document_type.log

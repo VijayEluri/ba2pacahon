@@ -46,35 +46,19 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link ListAttachmentsResponse }
+     * 
+     */
+    public ListAttachmentsResponse createListAttachmentsResponse() {
+        return new ListAttachmentsResponse();
+    }
+
+    /**
      * Create an instance of {@link ListAttachments }
      * 
      */
     public ListAttachments createListAttachments() {
         return new ListAttachments();
-    }
-
-    /**
-     * Create an instance of {@link GetVersionResponse }
-     * 
-     */
-    public GetVersionResponse createGetVersionResponse() {
-        return new GetVersionResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetDependenciesVersionsResponse }
-     * 
-     */
-    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
-        return new GetDependenciesVersionsResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetVersion }
-     * 
-     */
-    public GetVersion createGetVersion() {
-        return new GetVersion();
     }
 
     /**
@@ -86,43 +70,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AccessDeniedException }
+     * Create an instance of {@link GetVersionResponse }
      * 
      */
-    public AccessDeniedException createAccessDeniedException() {
-        return new AccessDeniedException();
-    }
-
-    /**
-     * Create an instance of {@link ListAttachmentsResponse }
-     * 
-     */
-    public ListAttachmentsResponse createListAttachmentsResponse() {
-        return new ListAttachmentsResponse();
-    }
-
-    /**
-     * Create an instance of {@link CreateAttachment }
-     * 
-     */
-    public CreateAttachment createCreateAttachment() {
-        return new CreateAttachment();
-    }
-
-    /**
-     * Create an instance of {@link CreateAttachmentResponse }
-     * 
-     */
-    public CreateAttachmentResponse createCreateAttachmentResponse() {
-        return new CreateAttachmentResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetAttachment }
-     * 
-     */
-    public GetAttachment createGetAttachment() {
-        return new GetAttachment();
+    public GetVersionResponse createGetVersionResponse() {
+        return new GetVersionResponse();
     }
 
     /**
@@ -134,11 +86,51 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GetDependenciesVersions }
+     * Create an instance of {@link CreateAttachment }
      * 
      */
-    public GetDependenciesVersions createGetDependenciesVersions() {
-        return new GetDependenciesVersions();
+    public CreateAttachment createCreateAttachment() {
+        return new CreateAttachment();
+    }
+
+    /**
+     * Create an instance of {@link GetAttachment }
+     * 
+     */
+    public GetAttachment createGetAttachment() {
+        return new GetAttachment();
+    }
+
+    /**
+     * Create an instance of {@link GetDependenciesVersionsResponse }
+     * 
+     */
+    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
+        return new GetDependenciesVersionsResponse();
+    }
+
+    /**
+     * Create an instance of {@link AccessDeniedException }
+     * 
+     */
+    public AccessDeniedException createAccessDeniedException() {
+        return new AccessDeniedException();
+    }
+
+    /**
+     * Create an instance of {@link GetVersion }
+     * 
+     */
+    public GetVersion createGetVersion() {
+        return new GetVersion();
+    }
+
+    /**
+     * Create an instance of {@link CreateAttachmentResponse }
+     * 
+     */
+    public CreateAttachmentResponse createCreateAttachmentResponse() {
+        return new CreateAttachmentResponse();
     }
 
     /**
@@ -147,6 +139,14 @@ public class ObjectFactory {
      */
     public GetAttachmentResponse createGetAttachmentResponse() {
         return new GetAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetDependenciesVersions }
+     * 
+     */
+    public GetDependenciesVersions createGetDependenciesVersions() {
+        return new GetDependenciesVersions();
     }
 
     /**

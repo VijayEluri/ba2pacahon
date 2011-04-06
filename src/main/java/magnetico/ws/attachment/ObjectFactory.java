@@ -46,14 +46,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ListAttachmentsResponse }
-     * 
-     */
-    public ListAttachmentsResponse createListAttachmentsResponse() {
-        return new ListAttachmentsResponse();
-    }
-
-    /**
      * Create an instance of {@link ListAttachments }
      * 
      */
@@ -62,51 +54,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AttachmentType }
-     * 
-     */
-    public AttachmentType createAttachmentType() {
-        return new AttachmentType();
-    }
-
-    /**
      * Create an instance of {@link GetVersionResponse }
      * 
      */
     public GetVersionResponse createGetVersionResponse() {
         return new GetVersionResponse();
-    }
-
-    /**
-     * Create an instance of {@link BigArchiveServerException }
-     * 
-     */
-    public BigArchiveServerException createBigArchiveServerException() {
-        return new BigArchiveServerException();
-    }
-
-    /**
-     * Create an instance of {@link CreateAttachment }
-     * 
-     */
-    public CreateAttachment createCreateAttachment() {
-        return new CreateAttachment();
-    }
-
-    /**
-     * Create an instance of {@link GetAttachment }
-     * 
-     */
-    public GetAttachment createGetAttachment() {
-        return new GetAttachment();
-    }
-
-    /**
-     * Create an instance of {@link GetDependenciesVersionsResponse }
-     * 
-     */
-    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
-        return new GetDependenciesVersionsResponse();
     }
 
     /**
@@ -126,11 +78,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CreateAttachmentResponse }
+     * Create an instance of {@link GetAttachment }
      * 
      */
-    public CreateAttachmentResponse createCreateAttachmentResponse() {
-        return new CreateAttachmentResponse();
+    public GetAttachment createGetAttachment() {
+        return new GetAttachment();
+    }
+
+    /**
+     * Create an instance of {@link GetDependenciesVersionsResponse }
+     * 
+     */
+    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
+        return new GetDependenciesVersionsResponse();
+    }
+
+    /**
+     * Create an instance of {@link AttachmentType }
+     * 
+     */
+    public AttachmentType createAttachmentType() {
+        return new AttachmentType();
+    }
+
+    /**
+     * Create an instance of {@link BigArchiveServerException }
+     * 
+     */
+    public BigArchiveServerException createBigArchiveServerException() {
+        return new BigArchiveServerException();
+    }
+
+    /**
+     * Create an instance of {@link ListAttachmentsResponse }
+     * 
+     */
+    public ListAttachmentsResponse createListAttachmentsResponse() {
+        return new ListAttachmentsResponse();
     }
 
     /**
@@ -147,6 +131,22 @@ public class ObjectFactory {
      */
     public GetDependenciesVersions createGetDependenciesVersions() {
         return new GetDependenciesVersions();
+    }
+
+    /**
+     * Create an instance of {@link CreateAttachmentResponse }
+     * 
+     */
+    public CreateAttachmentResponse createCreateAttachmentResponse() {
+        return new CreateAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateAttachment }
+     * 
+     */
+    public CreateAttachment createCreateAttachment() {
+        return new CreateAttachment();
     }
 
     /**

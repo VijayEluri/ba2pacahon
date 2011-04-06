@@ -1543,7 +1543,7 @@ public class Fetcher
 
 		} else
 		{
-			System.out.println("?");
+			System.out.println("not found data for property [" + attUri + "] in document [" + linkDocUri + "], defrep:" + def_repr);
 		}
 
 	}

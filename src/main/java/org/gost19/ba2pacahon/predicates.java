@@ -21,7 +21,7 @@ public class predicates
 	public static final String query = "http://gost19.org/query#";
 
 	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
-			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
+			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix dc: <" + dc + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
 			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
 			+ "> .\n" + "@prefix docs: <" + docs + "> .\n";
 

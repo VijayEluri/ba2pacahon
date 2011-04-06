@@ -55,7 +55,7 @@ public class util
 			result[1] = rs.getString(2);
 		} else
 		{
-			throw new Exception("NoSuchObjectException");
+			throw new Exception("record with id=[" + id + "], not exist");
 		}
 		rs.close();
 		ps.close();

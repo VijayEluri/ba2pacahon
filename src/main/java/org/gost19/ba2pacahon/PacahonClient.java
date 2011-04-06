@@ -146,6 +146,7 @@ public class PacahonClient
 				{
 					result = result.substring(start + 2, stop);
 					result = result.replaceAll("\\\\\"", "\"");
+					result = result.replaceAll("\n", "\\n");
 
 					Model message = ModelFactory.createDefaultModel();
 
@@ -153,7 +154,13 @@ public class PacahonClient
 					StringReader sr = new StringReader(result);
 					RDFReader r = message.getReader("N3");
 					String baseURI = "";
-					r.read(message, sr, baseURI);
+					try
+					{
+						r.read(message, sr, baseURI);
+					} catch (Exception ex)
+					{
+						throw ex;
+					}
 					sr.close();
 					return message;
 				} else

@@ -10,8 +10,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -740,6 +742,7 @@ public class Fetcher
 					}
 				}
 				recordId__versionId.put(recordId, doc_id);
+				System.out.println("recordId = " + recordId + " -> docUri" + doc_id);
 				//				versionId__recordId.put(doc_id, recordId);
 
 				{
@@ -886,6 +889,59 @@ public class Fetcher
 										date_created);
 							}
 
+						} else if (type.equals("DATEINTERVAL"))
+						{
+							//	dateFromValue
+							// dateToValue
+							String value = "";
+							String value1 = util.get(att_list_element, "dateFromValue", null);
+							String value2 = util.get(att_list_element, "dateToValue", null);
+
+							if (value1 != null && value1.length() > 0)
+							{
+								value = value1;
+							}
+							value += ";";
+							if (value1 != null && value1.length() > 0)
+							{
+								value += value2;
+							}
+
+							if (value != null && value.length() > 0)
+							{
+								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+							}
+						} else if (type.equals("DATE"))
+						{
+							// dateValue
+							String value = util.get(att_list_element, "dateValue", null);
+							if (value != null && value.length() > 0)
+							{
+								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+							}
+						} else if (type.equals("NUMBER"))
+						{
+							// numberFromValue
+							String value = util.get(att_list_element, "numberValue", null);
+							if (value != null && value.length() > 0)
+							{
+								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+							}
+						} else if (type.equals("FILE"))
+						{
+							// fileValue
+							type.hashCode();
+						} else if (type.equals("BOOLEAN"))
+						{
+							// flagValue
+							String value = util.get(att_list_element, "flagValue", null);
+							if (value != null && value.length() > 0)
+							{
+								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+							}
+						} else
+						{
+							type.hashCode();
 						}
 
 					}
@@ -1481,10 +1537,18 @@ public class Fetcher
 			return;
 
 		String rId[] = util.getRecordIdAndTemplateIdOfDocId__OnDate(linkDocId, date_created, connection);
+		if (rId == null)
+		{
+			System.out.println("invalid linked doc detected: [" + linkDocId + "]");
+
+			return;
+		}
+
 		String vId = recordId__versionId.get(rId[0]);
 
 		if (vId == null)
 		{
+			System.out.println("		prepare for linked doc [" + linkDocId + "]");
 			prepare_document(linkDocId, pacahon_client, ticket);
 			vId = recordId__versionId.get(rId[0]);
 
@@ -1543,7 +1607,8 @@ public class Fetcher
 
 		} else
 		{
-			System.out.println("not found data for property [" + attUri + "] in document [" + linkDocUri + "], defrep:" + def_repr);
+			System.out.println("not found data for property [" + attUri + "] in document [" + linkDocUri + "], defrep:"
+					+ def_repr);
 		}
 
 	}
@@ -1691,8 +1756,8 @@ public class Fetcher
 		String code = _code;
 		String this_code_in_onto = code_onto.get(code.toLowerCase());
 
-//		if (code.equals("3"))
-//			System.out.println("?");
+		//		if (code.equals("3"))
+		//			System.out.println("?");
 
 		if (this_code_in_onto == null)
 		{
@@ -1727,14 +1792,14 @@ public class Fetcher
 			this_code_in_onto = predicates.user_onto
 					+ Translit.toTranslit(code).replace('/', '_').replace(' ', '_').replace('\'', '_')
 							.replace('№', 'N').replace(',', '_').replace('(', '_').replace(')', '_').replace('.', '_')
-							.replace('-', '_').toLowerCase();
+							.replace('-', '_').replace('%', 'P').toLowerCase();
 
 		}
 
 		old_code__new_code.put(_code, this_code_in_onto);
 
-//		if (this_code_in_onto == null || this_code_in_onto.equals("null"))
-//			System.out.println("?");
+		//		if (this_code_in_onto == null || this_code_in_onto.equals("null"))
+		//			System.out.println("?");
 
 		return this_code_in_onto;
 	}
@@ -1829,36 +1894,36 @@ public class Fetcher
 		// exclude_code.put("$parentDocumentId", "Y");
 		{
 			code_onto.put("date_from", predicates.swrc__startDate);
-			code_onto.put("to", predicates.swrc__endDate);
 			code_onto.put("date_to", predicates.swrc__endDate);
-			code_onto.put("from", predicates.docs__from);
 			code_onto.put("file", predicates.docs__FileDescription);
-			code_onto.put("дата окончания (планируемая)", predicates.swrc__endDate);
-			code_onto.put("от кого", predicates.docs__from);
-			code_onto.put("кому", predicates.docs__to);
+			code_onto.put("from", predicates.docs__from);
 			code_onto.put("name", predicates.swrc__name);
-			code_onto.put("название", predicates.swrc__name);
-			code_onto.put("наименование", predicates.swrc__name);
-			code_onto.put("полное название", predicates.swrc__name);
-			code_onto.put("тема", predicates.dc__subject);
 			code_onto.put("subject/тема", predicates.dc__subject);
-			code_onto.put("заголовок", predicates.dc__title);
-			code_onto.put("тип", predicates.dc__type);
-			code_onto.put("подразделение", predicates.docs__unit);
-			code_onto.put("дата окончания", predicates.swrc__endDate);
-			code_onto.put("дата начала", predicates.swrc__startDate);
+			code_onto.put("to", predicates.swrc__endDate);
 			code_onto.put("в копию", predicates.docs__carbon_copy);
-			code_onto.put("контрагент (название/ страна/ город)", predicates.docs__contractor);
-			code_onto.put("контрагент", predicates.docs__contractor);
-			code_onto.put("вложения", predicates.docs__FileDescription);
 			code_onto.put("вложение", predicates.docs__FileDescription);
+			code_onto.put("вложения", predicates.docs__FileDescription);
+			code_onto.put("дата начала", predicates.swrc__startDate);
+			code_onto.put("дата окончания", predicates.swrc__endDate);
+			code_onto.put("дата окончания (планируемая)", predicates.swrc__endDate);
+			code_onto.put("заголовок", predicates.dc__title);
 			code_onto.put("ключевые слова", predicates.swrc__keywords);
-			code_onto.put("номер", predicates.swrc__number);
-			code_onto.put("ссылка на документ", predicates.docs__link);
-			code_onto.put("содержание", predicates.docs__content);
-			code_onto.put("краткое содержание", predicates.dc__description);
 			code_onto.put("комментарии", predicates.swrc__note);
 			code_onto.put("комментарий", predicates.swrc__note);
+			code_onto.put("кому", predicates.docs__to);
+			code_onto.put("контрагент", predicates.docs__contractor);
+			code_onto.put("контрагент (название/ страна/ город)", predicates.docs__contractor);
+			code_onto.put("краткое содержание", predicates.dc__description);
+			code_onto.put("название", predicates.swrc__name);
+			code_onto.put("наименование", predicates.swrc__name);
+			code_onto.put("номер", predicates.swrc__number);
+			code_onto.put("от кого", predicates.docs__from);
+			code_onto.put("подразделение", predicates.docs__unit);
+			code_onto.put("полное название", predicates.swrc__name);
+			code_onto.put("содержание", predicates.docs__content);
+			code_onto.put("ссылка на документ", predicates.docs__link);
+			code_onto.put("тема", predicates.dc__subject);
+			code_onto.put("тип", predicates.dc__type);
 
 			/*
 			 * [Связанные документы]:19 [Цех]:15 [Дата регистрации]:13
@@ -1886,6 +1951,15 @@ public class Fetcher
 
 		fetchOrganization(pacahon_client, ticket);
 		fetchDocumentTypes(pacahon_client, ticket);
+
+		Iterator<Entry<String, String>> it = old_code__new_code.entrySet().iterator();
+		while (it.hasNext())
+		{
+			Entry<String, String> e = it.next();
+			System.out.println(e.getKey() + " => " + e.getValue());
+
+		}
+
 		fetchDocuments(pacahon_client, ticket);
 
 		Thread.currentThread().sleep(999999999);

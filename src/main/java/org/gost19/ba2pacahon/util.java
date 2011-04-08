@@ -55,7 +55,7 @@ public class util
 			result[1] = rs.getString(2);
 		} else
 		{
-			throw new Exception("record with id=[" + id + "], not exist");
+			return null;
 		}
 		rs.close();
 		ps.close();

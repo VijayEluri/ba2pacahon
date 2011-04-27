@@ -107,6 +107,7 @@ public class predicates
 	public static final String gost19__take = gost19 + "take";
 	public static final String gost19__volatile = gost19 + "volatile";
 	public static final String gost19__version = gost19 + "version";
+	public static final String gost19__tag = gost19 + "tag";
 
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";

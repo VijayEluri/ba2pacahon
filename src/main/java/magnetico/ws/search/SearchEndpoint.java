@@ -29,8 +29,8 @@ public interface SearchEndpoint {
      * @param sessionTicketId
      * @return
      *     returns magnetico.ws.search.SearchResultsResponseType
-     * @throws AccessDeniedException_Exception
      * @throws BigArchiveServerException_Exception
+     * @throws AccessDeniedException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -50,8 +50,8 @@ public interface SearchEndpoint {
      * @param sessionTicketId
      * @return
      *     returns magnetico.ws.search.SearchResponseType
-     * @throws AccessDeniedException_Exception
      * @throws BigArchiveServerException_Exception
+     * @throws AccessDeniedException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -71,8 +71,8 @@ public interface SearchEndpoint {
      * @param sessionTicketId
      * @return
      *     returns magnetico.ws.search.SearchResponseType
-     * @throws AccessDeniedException_Exception
      * @throws BigArchiveServerException_Exception
+     * @throws AccessDeniedException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")

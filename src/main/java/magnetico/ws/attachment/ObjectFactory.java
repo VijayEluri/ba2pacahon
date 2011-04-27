@@ -46,83 +46,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ListAttachments }
-     * 
-     */
-    public ListAttachments createListAttachments() {
-        return new ListAttachments();
-    }
-
-    /**
-     * Create an instance of {@link ListAttachmentsResponse }
-     * 
-     */
-    public ListAttachmentsResponse createListAttachmentsResponse() {
-        return new ListAttachmentsResponse();
-    }
-
-    /**
-     * Create an instance of {@link BigArchiveServerException }
-     * 
-     */
-    public BigArchiveServerException createBigArchiveServerException() {
-        return new BigArchiveServerException();
-    }
-
-    /**
-     * Create an instance of {@link GetVersion }
-     * 
-     */
-    public GetVersion createGetVersion() {
-        return new GetVersion();
-    }
-
-    /**
      * Create an instance of {@link GetDependenciesVersions }
      * 
      */
     public GetDependenciesVersions createGetDependenciesVersions() {
         return new GetDependenciesVersions();
-    }
-
-    /**
-     * Create an instance of {@link AttachmentType }
-     * 
-     */
-    public AttachmentType createAttachmentType() {
-        return new AttachmentType();
-    }
-
-    /**
-     * Create an instance of {@link CreateAttachment }
-     * 
-     */
-    public CreateAttachment createCreateAttachment() {
-        return new CreateAttachment();
-    }
-
-    /**
-     * Create an instance of {@link AccessDeniedException }
-     * 
-     */
-    public AccessDeniedException createAccessDeniedException() {
-        return new AccessDeniedException();
-    }
-
-    /**
-     * Create an instance of {@link GetVersionResponse }
-     * 
-     */
-    public GetVersionResponse createGetVersionResponse() {
-        return new GetVersionResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetDependenciesVersionsResponse }
-     * 
-     */
-    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
-        return new GetDependenciesVersionsResponse();
     }
 
     /**
@@ -142,11 +70,83 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link GetVersion }
+     * 
+     */
+    public GetVersion createGetVersion() {
+        return new GetVersion();
+    }
+
+    /**
+     * Create an instance of {@link CreateAttachment }
+     * 
+     */
+    public CreateAttachment createCreateAttachment() {
+        return new CreateAttachment();
+    }
+
+    /**
+     * Create an instance of {@link ListAttachments }
+     * 
+     */
+    public ListAttachments createListAttachments() {
+        return new ListAttachments();
+    }
+
+    /**
+     * Create an instance of {@link GetVersionResponse }
+     * 
+     */
+    public GetVersionResponse createGetVersionResponse() {
+        return new GetVersionResponse();
+    }
+
+    /**
+     * Create an instance of {@link AccessDeniedException }
+     * 
+     */
+    public AccessDeniedException createAccessDeniedException() {
+        return new AccessDeniedException();
+    }
+
+    /**
+     * Create an instance of {@link ListAttachmentsResponse }
+     * 
+     */
+    public ListAttachmentsResponse createListAttachmentsResponse() {
+        return new ListAttachmentsResponse();
+    }
+
+    /**
      * Create an instance of {@link GetAttachment }
      * 
      */
     public GetAttachment createGetAttachment() {
         return new GetAttachment();
+    }
+
+    /**
+     * Create an instance of {@link AttachmentType }
+     * 
+     */
+    public AttachmentType createAttachmentType() {
+        return new AttachmentType();
+    }
+
+    /**
+     * Create an instance of {@link GetDependenciesVersionsResponse }
+     * 
+     */
+    public GetDependenciesVersionsResponse createGetDependenciesVersionsResponse() {
+        return new GetDependenciesVersionsResponse();
+    }
+
+    /**
+     * Create an instance of {@link BigArchiveServerException }
+     * 
+     */
+    public BigArchiveServerException createBigArchiveServerException() {
+        return new BigArchiveServerException();
     }
 
     /**

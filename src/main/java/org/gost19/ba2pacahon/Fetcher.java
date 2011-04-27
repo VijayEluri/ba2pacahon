@@ -55,7 +55,8 @@ public class Fetcher
 	private static HashMap<String, String> recordId__versionId = new HashMap<String, String>();
 	private static HashMap<String, String> docUri__templateUri = new HashMap<String, String>();
 
-	private static Map<String, Department> departmentsOfExtIdMap = new HashMap<String, Department>();
+	private static Map<String, Department> departments__id = new HashMap<String, Department>();
+	private static Map<String, String> extId__id = new HashMap<String, String>();
 
 	private static Map<String, String[]> templateId__defaultRepresentation = new HashMap<String, String[]>();
 	private static Map<String, String[]> templateUri_fieldUri__takedUri = new HashMap<String, String[]>();
@@ -672,6 +673,8 @@ public class Fetcher
 		 * old_code__new_code.entrySet()) { System.out.println("[" + ee.getKey()
 		 * + "]->[" + ee.getValue() + "]"); }
 		 */
+
+		System.out.print("templateUri_fieldUri__takedUri:\n" + templateUri_fieldUri__takedUri);
 	}
 
 	private static int count_documents_with_versions = 0;
@@ -681,8 +684,14 @@ public class Fetcher
 
 	private static Map<String, String> prepared_docs = new HashMap<String, String>();
 
-	private static void prepare_document(String docId, PacahonClient pacahon_client, String ticket) throws Exception
+	private static void prepare_document(String docId, PacahonClient pacahon_client, String ticket, int level)
+			throws Exception
 	{
+		String tab = "";
+
+		for (int i = 0; i <= level; i++)
+			tab += "   ";
+
 		{
 			if (prepared_docs.get(docId) != null)
 				return;
@@ -716,7 +725,7 @@ public class Fetcher
 
 				try
 				{
-					docXmlStr = docXmlStr.replace("\"", "*"); // @@@
+					// docXmlStr = docXmlStr.replace("\"", "*"); // @@@
 					IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
 					parser.setReader(reader);
 					xmlDoc = (IXMLElement) parser.parse(true);
@@ -724,7 +733,7 @@ public class Fetcher
 				} catch (Exception ex)
 				{
 					ex.printStackTrace(System.out);
-					System.out.println("invalid document [" + docXmlStr + "]");
+					System.out.println(tab + "invalid document [" + docXmlStr + "]");
 
 					continue;
 				}
@@ -754,26 +763,26 @@ public class Fetcher
 					}
 				}
 				recordId__versionId.put(recordId, doc_id);
-				System.out.println("recordId = " + recordId + " -> docUri" + doc_id);
+				System.out.println(tab + "recordId = " + recordId + " -> docUri = " + doc_id);
 				// versionId__recordId.put(doc_id, recordId);
 
 				{
 					count_documents_with_versions++;
 
 					if (count_documents_with_versions % 1000 == 0)
-						System.out.println("count documents with versions = " + count_documents_with_versions
+						System.out.println(tab + "count documents with versions = " + count_documents_with_versions
 								+ ", unique docs = " + count_documents + ", max count versions of document="
 								+ max_count_versons_of_document);
 				}
 
 				// id = util.get(xmlDoc, "id", null);
-				System.out.println("* doc id = " + id);
+				System.out.println(tab + "* doc id = " + id);
 
 				String authorId = util.get(xmlDoc, "authorId", null);
 				String dateCreatedStr = util.get(xmlDoc, "dateCreated", null);
 
 				if (dateCreatedStr == null)
-					System.out.println("date create is null");
+					System.out.println(tab + "date create is null");
 
 				Date date_created = null;
 
@@ -792,192 +801,202 @@ public class Fetcher
 				String tmplRcId[] = util.getRecordIdAndTemplateIdOfDocId__OnDate(typeId, date_created, connection);
 				String templateId = recordId__versionId.get(tmplRcId[0]);
 
-				docUri__templateUri.put(doc_id, templateId);
-
-				r = node.createResource(doc_id);
-
-				r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
-						ResourceFactory.createProperty(current_doc_id));
-
-				if (timestamp == null)
+				if (templateId == null)
 				{
-					r.addProperty(ResourceFactory.createProperty(predicates.gost19__volatile),
-							node.createLiteral("true"));
-				}
-
-				try
+					System.out.println(tab + "for doc:[" + id + "] typeId:[" + typeId + "] not exist template");
+				} else
 				{
-					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-							ResourceFactory.createProperty(templateId));
-				} catch (Exception ex)
-				{
-					ex.printStackTrace(System.out);
-					System.out.println("^templateId=[" + templateId + "], typeId=[" + typeId + "], tmplRcId=["
-							+ tmplRcId + "]");
-				}
+					docUri__templateUri.put(doc_id, templateId);
 
-				r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
-						ResourceFactory.createProperty(predicates.docs__Document));
+					r = node.createResource(doc_id);
 
-				r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-						ResourceFactory.createProperty(predicates.docs__Document));
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
+							ResourceFactory.createProperty(current_doc_id));
 
-				r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
-
-				if (dateCreatedStr != null)
-				{
-					r.addProperty(ResourceFactory.createProperty(predicates.swrc__creationDate),
-							node.createLiteral(dateCreatedStr));
-				}
-
-				if (authorId != null)
-					addOuToDocument(doc_id, authorId, predicates.dc__creator, node, r);
-
-				Vector<IXMLElement> atts = null;
-				atts = xmlDoc.getFirstChildNamed("xmlAttributes").getChildren();
-
-				if (atts != null)
-				{
-					for (IXMLElement att_list_element : atts)
+					if (timestamp == null)
 					{
-						String type = util.get(att_list_element, "type", "");
-						String att_name = util.get(att_list_element, "name", "");
-						String att_code = util.get(att_list_element, "code", "");
-
-						if (exclude_codes_doc.indexOf(att_name) >= 0)
-						{
-							// System.out.println("\n	att_name=[" + att_name +
-							// "] is skipped");
-
-							continue;
-						}
-
-						String onto_code = old_code__new_code.get(att_code);
-						if (onto_code == null)
-							onto_code = renameCodeToOnto(att_code, null, att_name);
-
-						if (type.equals("ORGANIZATION"))
-						{
-							/*
-							 * <xmlAttribute>
-							 * <dateCreated>2010-02-02T09:40:08.862
-							 * +03:00</dateCreated> <description></description>
-							 * <multiSelect>true</multiSelect> <name>Кому</name>
-							 * <obligatory>true</obligatory>
-							 * <organizationTag>user</organizationTag>
-							 * <organizationValue
-							 * >fb926d69-3a49-4842-a2e2-e592fd301073
-							 * </organizationValue> <type>ORGANIZATION</type>
-							 * <computationalConfirm
-							 * >NONE</computationalConfirm>
-							 * <computationalReadonly
-							 * >false</computationalReadonly> <code>Кому</code>
-							 * <xmlAttributes/> </xmlAttribute>
-							 */
-							String organizationValue = util.get(att_list_element, "organizationValue", null);
-							String organizationTag = util.get(att_list_element, "organizationTag", null);
-
-							if (organizationValue != null)
-							{
-								addOuToDocument(doc_id, organizationValue, onto_code, node, r);
-							}
-						} else if (type.equals("TEXT") || type.equals("STRING"))
-						{
-							String textValue = util.get(att_list_element, "textValue", null);
-							if (textValue != null && textValue.length() > 0)
-							{
-								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(textValue));
-							}
-						} else if (type.equals("LINK"))
-						{
-							String value = util.get(att_list_element, "linkValue", null);
-
-							if (value != null && value.length() > 0)
-							{
-								addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
-										date_created);
-							}
-
-						} else if (type.equals("DICTIONARY"))
-						{
-							String value = util.get(att_list_element, "recordIdValue", null);
-
-							if (value != null && value.length() > 0)
-							{
-								addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
-										date_created);
-							}
-
-						} else if (type.equals("DATEINTERVAL"))
-						{
-							// dateFromValue
-							// dateToValue
-							String value = "";
-							String value1 = util.get(att_list_element, "dateFromValue", null);
-							String value2 = util.get(att_list_element, "dateToValue", null);
-
-							if (value1 != null && value1.length() > 0)
-							{
-								value = value1;
-							}
-							value += ";";
-							if (value1 != null && value1.length() > 0)
-							{
-								value += value2;
-							}
-
-							if (value != null && value.length() > 0)
-							{
-								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
-							}
-						} else if (type.equals("DATE"))
-						{
-							// dateValue
-							String value = util.get(att_list_element, "dateValue", null);
-							if (value != null && value.length() > 0)
-							{
-								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
-							}
-						} else if (type.equals("NUMBER"))
-						{
-							// numberFromValue
-							String value = util.get(att_list_element, "numberValue", null);
-							if (value != null && value.length() > 0)
-							{
-								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
-							}
-						} else if (type.equals("FILE"))
-						{
-							// fileValue
-							type.hashCode();
-						} else if (type.equals("BOOLEAN"))
-						{
-							// flagValue
-							String value = util.get(att_list_element, "flagValue", null);
-							if (value != null && value.length() > 0)
-							{
-								r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
-							}
-						} else
-						{
-							type.hashCode();
-						}
-
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__volatile),
+								node.createLiteral("true"));
 					}
+
+					try
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+								ResourceFactory.createProperty(templateId));
+					} catch (Exception ex)
+					{
+						ex.printStackTrace(System.out);
+						System.out.println(tab + "^templateId=[" + templateId + "], typeId=[" + typeId
+								+ "], tmplRcId=[" + tmplRcId + "]");
+					}
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
+							ResourceFactory.createProperty(predicates.docs__Document));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+							ResourceFactory.createProperty(predicates.docs__Document));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
+
+					if (dateCreatedStr != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc__creationDate),
+								node.createLiteral(dateCreatedStr));
+					}
+
+					if (authorId != null)
+						addOuToDocument(doc_id, authorId, predicates.dc__creator, node, r);
+
+					Vector<IXMLElement> atts = null;
+					atts = xmlDoc.getFirstChildNamed("xmlAttributes").getChildren();
+
+					if (atts != null)
+					{
+						for (IXMLElement att_list_element : atts)
+						{
+							String type = util.get(att_list_element, "type", "");
+							String att_name = util.get(att_list_element, "name", "");
+							String att_code = util.get(att_list_element, "code", "");
+
+							if (exclude_codes_doc.indexOf(att_name) >= 0)
+							{
+								// System.out.println("\n	att_name=[" + att_name
+								// +
+								// "] is skipped");
+
+								continue;
+							}
+
+							String onto_code = old_code__new_code.get(att_code);
+							if (onto_code == null)
+								onto_code = renameCodeToOnto(att_code, null, att_name);
+
+							if (type.equals("ORGANIZATION"))
+							{
+								/*
+								 * <xmlAttribute>
+								 * <dateCreated>2010-02-02T09:40:08.862
+								 * +03:00</dateCreated>
+								 * <description></description>
+								 * <multiSelect>true</multiSelect>
+								 * <name>Кому</name>
+								 * <obligatory>true</obligatory>
+								 * <organizationTag>user</organizationTag>
+								 * <organizationValue
+								 * >fb926d69-3a49-4842-a2e2-e592fd301073
+								 * </organizationValue>
+								 * <type>ORGANIZATION</type>
+								 * <computationalConfirm
+								 * >NONE</computationalConfirm>
+								 * <computationalReadonly
+								 * >false</computationalReadonly>
+								 * <code>Кому</code> <xmlAttributes/>
+								 * </xmlAttribute>
+								 */
+								String organizationValue = util.get(att_list_element, "organizationValue", null);
+								String organizationTag = util.get(att_list_element, "organizationTag", null);
+
+								if (organizationValue != null)
+								{
+									addOuToDocument(doc_id, organizationValue, onto_code, node, r);
+								}
+							} else if (type.equals("TEXT") || type.equals("STRING"))
+							{
+								String textValue = util.get(att_list_element, "textValue", null);
+								if (textValue != null && textValue.length() > 0)
+								{
+									r.addProperty(ResourceFactory.createProperty(onto_code),
+											node.createLiteral(textValue));
+								}
+							} else if (type.equals("LINK"))
+							{
+								String value = util.get(att_list_element, "linkValue", null);
+
+								if (value != null && value.length() > 0)
+								{
+									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
+											date_created, level);
+								}
+
+							} else if (type.equals("DICTIONARY"))
+							{
+								String value = util.get(att_list_element, "recordIdValue", null);
+
+								if (value != null && value.length() > 0)
+								{
+									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
+											date_created, level);
+								}
+
+							} else if (type.equals("DATEINTERVAL"))
+							{
+								// dateFromValue
+								// dateToValue
+								String value = "";
+								String value1 = util.get(att_list_element, "dateFromValue", null);
+								String value2 = util.get(att_list_element, "dateToValue", null);
+
+								if (value1 != null && value1.length() > 0)
+								{
+									value = value1;
+								}
+								value += ";";
+								if (value1 != null && value1.length() > 0)
+								{
+									value += value2;
+								}
+
+								if (value != null && value.length() > 0)
+								{
+									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+								}
+							} else if (type.equals("DATE"))
+							{
+								// dateValue
+								String value = util.get(att_list_element, "dateValue", null);
+								if (value != null && value.length() > 0)
+								{
+									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+								}
+							} else if (type.equals("NUMBER"))
+							{
+								// numberFromValue
+								String value = util.get(att_list_element, "numberValue", null);
+								if (value != null && value.length() > 0)
+								{
+									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+								}
+							} else if (type.equals("FILE"))
+							{
+								// fileValue
+								type.hashCode();
+							} else if (type.equals("BOOLEAN"))
+							{
+								// flagValue
+								String value = util.get(att_list_element, "flagValue", null);
+								if (value != null && value.length() > 0)
+								{
+									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
+								}
+							} else
+							{
+								type.hashCode();
+							}
+
+						}
+					}
+
+					pacahon_client.put(ticket, node);
 				}
-
-				pacahon_client.put(ticket, node);
-
 			} catch (Exception ex)
 			{
 				ex.printStackTrace(System.out);
-				System.out.println("skip document id=" + id + ", reson:" + ex.getMessage());
-				System.out.println("document [" + docXmlStr + "]");
+				System.out.println(tab + "skip document id=" + id + ", reson:" + ex.getMessage());
+				System.out.println(tab + "document [" + docXmlStr + "]");
 			}
 		}
 		docRecordRs.close();
 		st1.close();
-
 	}
 
 	private static int count_documents = 0;
@@ -999,7 +1018,7 @@ public class Fetcher
 		{
 			String docId = docRecordsRs.getString(1);
 			count_documents++;
-			prepare_document(docId, pacahon_client, ticket);
+			prepare_document(docId, pacahon_client, ticket, 0);
 		}
 
 		docRecordsRs.close();
@@ -1012,32 +1031,42 @@ public class Fetcher
 	 */
 	private static void fetchOrganization(PacahonClient pacahon_client, String ticket)
 	{
-		/*
-		 * список organization-roots спизжен из из конфига client.xml:
-		 */
+		group__Id_name = new HashMap<String, String>();
+		// это не организации и не подразделения, это группы:
+		group__Id_name.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
+		group__Id_name.put("bbee1427-9362-4a8b-8056-4ba4b772a5a0", "Другие_Others");
+		group__Id_name.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
+		group__Id_name.put("b0569cc4-4cd5-4aab-827b-4bcc61371ab9", "Проект 'Новый Взгляд'");
+		group__Id_name.put("3ac5dbf1-9281-4f5e-93a5-b41657223ce6", "Холдинг");
+		group__Id_name.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
+		group__Id_name.put("09fb4c26-b7f6-441d-9924-deda3685bb9d", "Magnetico");
+		group__Id_name.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
+		group__Id_name.put("0056f4df-e72c-4c4a-82cb-a1ac752a615e", "Структура");
+
 		HashMap<String, String> roots = new HashMap<String, String>();
 
-		roots.put("92e57b6d-83e3-485f-8885-0bade363f759", "Y");
-		roots.put("120c92a1-c738-4297-95ba-7a624a1343f7", "Y");
-		roots.put("5fca919f-ddd3-41a7-afe1-53daac507bee", "Y");
-		roots.put("f4c6c428-faec-40b3-b870-de70f0877ca7", "Y");
-		roots.put("59f99bce-32b8-4442-b766-def30f4194c1", "Y");
-		roots.put("7289c9ec-f45a-40ba-b7ae-41c66ed71aee", "Y");
-		roots.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "Y");
-		roots.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "Y");
-		roots.put("a5e73ead-a54d-4877-9b8d-8ee4f2b392a6", "Y");
-		roots.put("b6f88416-e1ee-4839-a6a2-aa6e9f6b07d1", "Y");
-		roots.put("d0f7131e-affb-4227-974a-71e3b39d71bd", "Y");
-		roots.put("7822d046-2da0-43dc-9288-ab197a2b7d97", "Y");
-		roots.put("6108a193-14c0-4e93-970b-a1ed29d55550", "Y");
-		roots.put("7f7c7821-8f6a-4fbb-9f3e-b09c0f7f1d05", "Y");
-		roots.put("2b01de3d-0d1f-458d-a62b-451037c0a5c7", "Y");
-		roots.put("5bf316d8-2424-4780-a81b-262214543f61", "Y");
-		roots.put("2e5c4e09-4439-45c6-8589-0cdcb9da6c03", "Y");
+		roots.put("68d1d86b-4e20-4ba2-a677-940eb4b45a29", "ООО \"Топливно-заправочный комплекс\"");
+		roots.put("92e57b6d-83e3-485f-8885-0bade363f759", "ОАО \"Монди СЛПК\"");
+		roots.put("120c92a1-c738-4297-95ba-7a624a1343f7", "ООО \"Ксерокс (СНГ)\"");
+		roots.put("5fca919f-ddd3-41a7-afe1-53daac507bee", "ООО ЧОП \"Эгида\"");
+		roots.put("f4c6c428-faec-40b3-b870-de70f0877ca7", "Профком 'СЛПК'");
+		roots.put("59f99bce-32b8-4442-b766-def30f4194c1", "ООО \"РМЗ\"");
+		roots.put("7289c9ec-f45a-40ba-b7ae-41c66ed71aee", "CSC OOO МБП Сейлз СНГ");
+		roots.put("a5e73ead-a54d-4877-9b8d-8ee4f2b392a6", "ООО \"ПожГазСервис\"");
+		roots.put("b6f88416-e1ee-4839-a6a2-aa6e9f6b07d1", "ООО \"Жилком\"");
+		roots.put("d0f7131e-affb-4227-974a-71e3b39d71bd", "ООО \"СППЖТ\"");
+		roots.put("7822d046-2da0-43dc-9288-ab197a2b7d97", "ООО \"Эжва\"");
+		roots.put("6108a193-14c0-4e93-970b-a1ed29d55550", "ООО 'Эжватранс'");
+		roots.put("7f7c7821-8f6a-4fbb-9f3e-b09c0f7f1d05", "ООО\"Эжвадорстрой\"");
+		roots.put("2b01de3d-0d1f-458d-a62b-451037c0a5c7", "ООО`Финлеском`");
+		roots.put("2e5c4e09-4439-45c6-8589-0cdcb9da6c03", "ООО \"Новый лес\"");
+		roots.put("68d1d86b-4e20-4ba2-a677-940eb4b45a29", "ООО \"Топливно-заправочный комплекс\"");
+		roots.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
+		roots.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
 
 		try
 		{
-			String structure_id = "0";
+			String structure_id = "0056f4df-e72c-4c4a-82cb-a1ac752a615e";
 
 			long start = System.currentTimeMillis();
 
@@ -1057,10 +1086,10 @@ public class Fetcher
 
 			// находим родителей для всех подразделений
 			int buCounter = 0;
-			departmentsOfExtIdMap = new HashMap<String, Department>();
+			departments__id = new HashMap<String, Department>();
 			// HashMap<String, ArrayList<String>> childs = new HashMap<String,
 			// ArrayList<String>>();
-			HashMap<String, String> childToParent = new HashMap<String, String>();
+			HashMap<String, String> child__parent = new HashMap<String, String>();
 			for (Department department : deps)
 			{
 				if (department.getExtId() == null)
@@ -1075,11 +1104,12 @@ public class Fetcher
 				for (Department child : childDeps)
 				{
 					// breed.add(child.getInternalId());
-					childToParent.put(child.getExtId(), department.getExtId());
+					child__parent.put(child.getId(), department.getId());
 				}
 				// childs.put(department.getId(), breed);
 
-				departmentsOfExtIdMap.put(department.getExtId(), department);
+				departments__id.put(department.getId(), department);
+				extId__id.put(department.getExtId(), department.getId());
 				buCounter++;
 			}
 
@@ -1087,7 +1117,7 @@ public class Fetcher
 			for (Department department : deps)
 			{
 
-				String parent = childToParent.get(department.getExtId());
+				String parent = child__parent.get(department.getId());
 
 				if (parent == null)
 					continue;
@@ -1098,7 +1128,7 @@ public class Fetcher
 				{
 					up_department = parent;
 
-					parent = childToParent.get(parent);
+					parent = child__parent.get(parent);
 				}
 
 				department.setOrganizationId(up_department);
@@ -1127,30 +1157,39 @@ public class Fetcher
 					continue;
 				}
 
-				String parent = childToParent.get(department.getExtId());
+				String parent = child__parent.get(department.getId());
 				boolean isOrganization = false;
 				boolean isDepartment = false;
 				boolean isGroup = false;
 
-				if (parent == null || group__Id_name.get(department.getId()) != null)
+				if (group__Id_name.get(department.getId()) != null)
 				{
 					isGroup = true;
-				} else if (parent.equals(structure_id))
+				} else if (parent == null)
 				{
 					isOrganization = true;
 				} else
 				{
-					isDepartment = true;
+					if (parent != null && parent.equals(structure_id))
+					{
+						parent = null;
+						isOrganization = true;
+					} else
+					{
+						isDepartment = true;
+					}
+
 				}
 
-				if (parent != null && parent.equals(structure_id) && roots.get(department.getId()) == null)
-				{
-					parent = null;
-				}
-				if (roots.get(department.getId()) != null)
-				{
-					parent = "0";
-				}
+				// if (parent != null && parent.equals(structure_id) &&
+				// roots.get(department.getId()) == null)
+				// {
+				// parent = null;
+				// }
+				// if (roots.get(department.getId()) != null)
+				// {
+				// parent = "0";
+				// }
 
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
@@ -1228,6 +1267,11 @@ public class Fetcher
 						r.addProperty(ResourceFactory.createProperty(predicates.docs__active),
 								node.createLiteral("true"));
 					}
+					if (roots.get(department.getId()) != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__tag),
+								node.createLiteral("root"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
 							node.createLiteral(department.getExtId()));
@@ -1269,6 +1313,11 @@ public class Fetcher
 						r.addProperty(ResourceFactory.createProperty(predicates.docs__active),
 								node.createLiteral("true"));
 					}
+					if (roots.get(department.getId()) != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__tag),
+								node.createLiteral("root"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
 							node.createLiteral(department.getNameRu(), "ru"));
@@ -1280,7 +1329,12 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getExtId()));
+							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()/*
+																									 * .
+																									 * getExtId
+																									 * (
+																									 * )
+																									 */));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
 							node.createLiteral(department.getExtId()));
@@ -1290,9 +1344,16 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
 
+					Department dep = departments__id.get(parent);
+
+					if (dep == null)
+					{
+						System.out.print("");
+					}
+
 					write_add_info_of_attribute(predicates.zdb + "doc_" + department.getId(),
 							predicates.docs__parentUnit, predicates.zdb + "dep_" + parent, predicates.swrc__name,
-							departmentsOfExtIdMap.get(parent).getNameRu(), node);
+							dep.getNameRu(), node);
 				}
 
 				ouUri__userObj.put(ouId, department);
@@ -1328,12 +1389,14 @@ public class Fetcher
 				String userId = userEntity.getUid();
 				System.out.println(ii + " add user " + userId + ", oiud=" + predicates.zdb + "person_" + userId);
 
-				ouUri__userObj.put(predicates.zdb + "person_" + userId, userEntity);
+				String userUri = predicates.zdb + "person_" + userId;
+
+				ouUri__userObj.put(userUri, userEntity);
 
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
 
-				Resource r_user = node.createResource(predicates.zdb + "person_" + userId);
+				Resource r_user = node.createResource(userUri);
 				r_user.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 						ResourceFactory.createProperty(predicates.swrc__Employee));
 
@@ -1343,6 +1406,9 @@ public class Fetcher
 
 				r.addProperty(ResourceFactory.createProperty(predicates.gost19, "employee"),
 						ResourceFactory.createProperty(predicates.zdb, "person_" + userId));
+
+				r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
+						ResourceFactory.createProperty(userUri));
 
 				String domainName = null;
 				String password = null;
@@ -1425,16 +1491,17 @@ public class Fetcher
 						// out);
 					} else if (a.getName().equalsIgnoreCase("departmentId"))
 					{
-						Department department = departmentsOfExtIdMap.get(a.getValue());
+						String id = extId__id.get(a.getValue());
+						Department department = departments__id.get(id);
 
 						if (department == null)
 							System.out.println("dep is null for user (id = " + userId + ")");
 						else
 						{
-							r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
+							r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
 									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
 
-							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__unit,
+							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__parentUnit,
 									predicates.zdb + "dep_" + department.getId(), predicates.swrc__name,
 									department.getNameRu(), node);
 						}
@@ -1554,7 +1621,7 @@ public class Fetcher
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private static void addLinkToDocument(String docUri, String linkDocId, String attUri, Model node, Resource r,
-			PacahonClient pacahon_client, String ticket, Date date_created) throws Exception
+			PacahonClient pacahon_client, String ticket, Date date_created, int level) throws Exception
 	{
 		if (linkDocId == null || linkDocId.length() < 2)
 			return;
@@ -1572,7 +1639,7 @@ public class Fetcher
 		if (vId == null)
 		{
 			System.out.println("		prepare for linked doc [" + linkDocId + "]");
-			prepare_document(linkDocId, pacahon_client, ticket);
+			prepare_document(linkDocId, pacahon_client, ticket, level + 1);
 			vId = recordId__versionId.get(rId[0]);
 
 			if (vId == null)
@@ -1582,7 +1649,6 @@ public class Fetcher
 		}
 
 		String linkDocUri = vId;
-		String templateId = docUri__templateUri.get(linkDocUri);
 
 		System.out.println("		linked doc:" + linkDocId);
 
@@ -1591,17 +1657,22 @@ public class Fetcher
 		// возможно у этого поля есть собственные представления для линка на
 		// документ
 		// возьмем сначала его
-		String[] def_repr = templateUri_fieldUri__takedUri.get(docUri + "+" + attUri);
+		String templateId = docUri__templateUri.get(docUri);
+		String[] def_repr = templateUri_fieldUri__takedUri.get(templateId + "+" + attUri);
 
 		if (def_repr == null)
 		{
 			// у документа linkDocId нужно считать поля def_repr[]
+			templateId = docUri__templateUri.get(linkDocUri);
 			def_repr = templateId__defaultRepresentation.get(templateId);
 			if (def_repr == null || def_repr.length == 0)
 			{
 				def_repr = new String[1];
 				def_repr[0] = predicates.swrc__name;
 			}
+		} else
+		{
+			def_repr.toString();
 		}
 
 		// и сохранить их здесь
@@ -1640,8 +1711,14 @@ public class Fetcher
 
 		} else
 		{
-			System.out.println("not found data for property [" + attUri + "] in document [" + linkDocUri + "], defrep:"
-					+ def_repr.toString());
+			System.out.println("not found data for property " + docUri + ":" + attUri + ", in document [" + linkDocUri
+					+ "]");
+
+			System.out.println("default representation");
+			for (String ee : def_repr)
+			{
+				System.out.println("" + ee);
+			}
 		}
 
 	}
@@ -1685,7 +1762,8 @@ public class Fetcher
 						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.docs__position, value, node);
 					} else if (name.equalsIgnoreCase("departmentId"))
 					{
-						Department department = departmentsOfExtIdMap.get(value);
+						String id = extId__id.get(value);
+						Department department = departments__id.get(id);
 						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name,
 								department.getNameRu(), node);
 
@@ -1912,18 +1990,6 @@ public class Fetcher
 
 	public static void main(String[] args) throws Exception
 	{
-		group__Id_name = new HashMap<String, String>();
-		// это не организации и не подразделения, это группы:
-		group__Id_name.put("fb6583b7-ed14-492f-bf92-45eb3cab3a56", "СТЕП_подрядные организации");
-		group__Id_name.put("bbee1427-9362-4a8b-8056-4ba4b772a5a0", "Другие_Others");
-		group__Id_name.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
-		group__Id_name.put("b0569cc4-4cd5-4aab-827b-4bcc61371ab9", "Проект 'Новый Взгляд'");
-		group__Id_name.put("3ac5dbf1-9281-4f5e-93a5-b41657223ce6", "Холдинг");
-		group__Id_name.put("5bf316d8-2424-4780-a81b-262214543f61", "Филиалы ООО \"Финлеском\"");
-		group__Id_name.put("09fb4c26-b7f6-441d-9924-deda3685bb9d", "Magnetico");
-		group__Id_name.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
-		group__Id_name.put("0056f4df-e72c-4c4a-82cb-a1ac752a615e", "Структура");
-
 		// exclude_code.put("$parentDocumentId", "Y");
 		{
 			code_onto.put("date_from", predicates.swrc__startDate);

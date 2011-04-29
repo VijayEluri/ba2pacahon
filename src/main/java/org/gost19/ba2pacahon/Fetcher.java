@@ -17,6 +17,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import magnetico.objects.organization.Department;
 import magnetico.ws.organization.AttributeType;
 import magnetico.ws.organization.EntityType;
@@ -25,6 +28,12 @@ import net.n3.nanoxml.IXMLParser;
 import net.n3.nanoxml.IXMLReader;
 import net.n3.nanoxml.StdXMLReader;
 import net.n3.nanoxml.XMLParserFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -60,6 +69,8 @@ public class Fetcher
 
 	private static Map<String, String[]> templateId__defaultRepresentation = new HashMap<String, String[]>();
 	private static Map<String, String[]> templateUri_fieldUri__takedUri = new HashMap<String, String[]>();
+
+	private static DocumentBuilder db = null;
 
 	/**
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
@@ -684,6 +695,31 @@ public class Fetcher
 
 	private static Map<String, String> prepared_docs = new HashMap<String, String>();
 
+	private static String getTextValue(Element ele, String tagName, String def) throws Exception
+	{
+		try
+		{
+			String textVal = null;
+			NodeList nl = ele.getElementsByTagName(tagName);
+			if (nl != null && nl.getLength() > 0)
+			{
+				Element el = (Element) nl.item(0);
+				Node nn = el.getFirstChild();
+
+				if (nn != null)
+					textVal = nn.getNodeValue();
+			}
+
+			if (textVal == null)
+				return def;
+
+			return textVal;
+		} catch (Exception ex)
+		{
+			throw ex;
+		}
+	}
+
 	private static void prepare_document(String docId, PacahonClient pacahon_client, String ticket, int level)
 			throws Exception
 	{
@@ -698,8 +734,8 @@ public class Fetcher
 			prepared_docs.put(docId, "+");
 		}
 
-		if (parser == null)
-			parser = XMLParserFactory.createDefaultXMLParser();
+		// if (parser == null)
+		// parser = XMLParserFactory.createDefaultXMLParser();
 
 		String docDataQuery = "select content, kindOf, timestamp, recordId, objectId FROM objects where objectId = '"
 				+ docId + "' order by timestamp desc";
@@ -721,15 +757,18 @@ public class Fetcher
 
 			try
 			{
-				IXMLElement xmlDoc;
+				// IXMLElement xmlDoc;
+				Document dom = null;
 
 				try
 				{
+					dom = db.parse(new InputSource(new java.io.StringReader(docXmlStr)));
+
 					// docXmlStr = docXmlStr.replace("\"", "*"); // @@@
-					IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
-					parser.setReader(reader);
-					xmlDoc = (IXMLElement) parser.parse(true);
-					reader.close();
+					// IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
+					// parser.setReader(reader);
+					// xmlDoc = (IXMLElement) parser.parse(true);
+					// reader.close();
 				} catch (Exception ex)
 				{
 					ex.printStackTrace(System.out);
@@ -737,12 +776,13 @@ public class Fetcher
 
 					continue;
 				}
+				Element de = dom.getDocumentElement();
 
 				String current_doc_id = null;
 
 				String doc_id = null;
 
-				String objectType = util.get(xmlDoc, "objectType", null);
+				String objectType = getTextValue(de, "objectType", null);
 				if (objectType.equals("DICTIONARY"))
 				{
 					doc_id = predicates.zdb + "dict_" + id;
@@ -778,8 +818,8 @@ public class Fetcher
 				// id = util.get(xmlDoc, "id", null);
 				System.out.println(tab + "* doc id = " + id);
 
-				String authorId = util.get(xmlDoc, "authorId", null);
-				String dateCreatedStr = util.get(xmlDoc, "dateCreated", null);
+				String authorId = getTextValue(de, "authorId", null);
+				String dateCreatedStr = getTextValue(de, "dateCreated", null);
 
 				if (dateCreatedStr == null)
 					System.out.println(tab + "date create is null");
@@ -789,9 +829,9 @@ public class Fetcher
 				if (dateCreatedStr != null)
 					date_created = util.string2date(dateCreatedStr);
 
-				String dateLastModified = util.get(xmlDoc, "dateLastModified", null);
-				String lastEditorId = util.get(xmlDoc, "lastEditorId", null);
-				String typeId = util.get(xmlDoc, "typeId", null);
+				String dateLastModified = getTextValue(de, "dateLastModified", null);
+				String lastEditorId = getTextValue(de, "lastEditorId", null);
+				String typeId = getTextValue(de, "typeId", null);
 
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
@@ -847,16 +887,22 @@ public class Fetcher
 					if (authorId != null)
 						addOuToDocument(doc_id, authorId, predicates.dc__creator, node, r);
 
-					Vector<IXMLElement> atts = null;
-					atts = xmlDoc.getFirstChildNamed("xmlAttributes").getChildren();
+					NodeList atts = dom.getElementsByTagName("xmlAttribute");
+
+					// Vector<IXMLElement> atts = null;
+					// atts =
+					// xmlDoc.getFirstChildNamed("xmlAttributes").getChildren();
 
 					if (atts != null)
 					{
-						for (IXMLElement att_list_element : atts)
+
+						for (int i = 0; i < atts.getLength(); i++)
 						{
-							String type = util.get(att_list_element, "type", "");
-							String att_name = util.get(att_list_element, "name", "");
-							String att_code = util.get(att_list_element, "code", "");
+							Element ee = (Element) atts.item(i);
+
+							String type = getTextValue(ee, "type", "");
+							String att_name = getTextValue(ee, "name", "");
+							String att_code = getTextValue(ee, "code", "");
 
 							if (exclude_codes_doc.indexOf(att_name) >= 0)
 							{
@@ -893,8 +939,8 @@ public class Fetcher
 								 * <code>Кому</code> <xmlAttributes/>
 								 * </xmlAttribute>
 								 */
-								String organizationValue = util.get(att_list_element, "organizationValue", null);
-								String organizationTag = util.get(att_list_element, "organizationTag", null);
+								String organizationValue = getTextValue(ee, "organizationValue", null);
+								String organizationTag = getTextValue(ee, "organizationTag", null);
 
 								if (organizationValue != null)
 								{
@@ -902,7 +948,7 @@ public class Fetcher
 								}
 							} else if (type.equals("TEXT") || type.equals("STRING"))
 							{
-								String textValue = util.get(att_list_element, "textValue", null);
+								String textValue = getTextValue(ee, "textValue", null);
 								if (textValue != null && textValue.length() > 0)
 								{
 									r.addProperty(ResourceFactory.createProperty(onto_code),
@@ -910,7 +956,7 @@ public class Fetcher
 								}
 							} else if (type.equals("LINK"))
 							{
-								String value = util.get(att_list_element, "linkValue", null);
+								String value = getTextValue(ee, "linkValue", null);
 
 								if (value != null && value.length() > 0)
 								{
@@ -920,7 +966,7 @@ public class Fetcher
 
 							} else if (type.equals("DICTIONARY"))
 							{
-								String value = util.get(att_list_element, "recordIdValue", null);
+								String value = getTextValue(ee, "recordIdValue", null);
 
 								if (value != null && value.length() > 0)
 								{
@@ -933,8 +979,8 @@ public class Fetcher
 								// dateFromValue
 								// dateToValue
 								String value = "";
-								String value1 = util.get(att_list_element, "dateFromValue", null);
-								String value2 = util.get(att_list_element, "dateToValue", null);
+								String value1 = getTextValue(ee, "dateFromValue", null);
+								String value2 = getTextValue(ee, "dateToValue", null);
 
 								if (value1 != null && value1.length() > 0)
 								{
@@ -953,7 +999,7 @@ public class Fetcher
 							} else if (type.equals("DATE"))
 							{
 								// dateValue
-								String value = util.get(att_list_element, "dateValue", null);
+								String value = getTextValue(ee, "dateValue", null);
 								if (value != null && value.length() > 0)
 								{
 									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
@@ -961,7 +1007,7 @@ public class Fetcher
 							} else if (type.equals("NUMBER"))
 							{
 								// numberFromValue
-								String value = util.get(att_list_element, "numberValue", null);
+								String value = getTextValue(ee, "numberValue", null);
 								if (value != null && value.length() > 0)
 								{
 									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
@@ -973,7 +1019,7 @@ public class Fetcher
 							} else if (type.equals("BOOLEAN"))
 							{
 								// flagValue
-								String value = util.get(att_list_element, "flagValue", null);
+								String value = getTextValue(ee, "flagValue", null);
 								if (value != null && value.length() > 0)
 								{
 									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(value));
@@ -1694,7 +1740,9 @@ public class Fetcher
 			}
 		}
 
-		Model mm = pacahon_client.get(ticket, node1);
+		Model mm = null;
+
+		mm = pacahon_client.get(ticket, node1);
 
 		if (mm != null && mm.size() > 0)
 		{
@@ -2057,6 +2105,9 @@ public class Fetcher
 			Entry<String, String> e = it.next();
 			System.out.println(e.getKey() + " => " + e.getValue());
 		}
+
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		db = dbf.newDocumentBuilder();
 
 		fetchDocuments(pacahon_client, ticket);
 

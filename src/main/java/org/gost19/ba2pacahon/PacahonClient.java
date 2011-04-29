@@ -50,7 +50,7 @@ public class PacahonClient
 		{
 			int start_pos = result.indexOf("\"", pos) + 1;
 			int end_pos = result.indexOf("\"", start_pos);
-			ticket = result.substring(start_pos, end_pos);
+			ticket = result.substring(start_pos, end_pos - 1);
 		}
 
 		return ticket;
@@ -159,6 +159,8 @@ public class PacahonClient
 						r.read(message, sr, baseURI);
 					} catch (Exception ex)
 					{
+						String result0 = new String(rr, "UTF-8");
+						result0.toString();
 						throw ex;
 					}
 					sr.close();

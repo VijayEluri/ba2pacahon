@@ -265,11 +265,11 @@ public class Fetcher
 						ResourceFactory.createProperty(predicates.zdb, "person_" + authorId));
 
 				if (dateCreated != null)
-					r.addProperty(ResourceFactory.createProperty(predicates.swrc__creationDate),
+					r.addProperty(ResourceFactory.createProperty(predicates.dc__created),
 							node.createLiteral(dateCreated.toString()));
 
 				if (lastModifiedTime != null)
-					r.addProperty(ResourceFactory.createProperty(predicates.dc__date),
+					r.addProperty(ResourceFactory.createProperty(predicates.dc__modified),
 							node.createLiteral(lastModifiedTime.toString()));
 
 				LangString lName = LangString.parse(name);
@@ -631,6 +631,10 @@ public class Fetcher
 						{
 							typeLabel = "text";
 							obj_owl__allValuesFrom = predicates.xsd__string;
+						} else if (type.equals("STRING"))
+						{
+							typeLabel = "string";
+							obj_owl__allValuesFrom = predicates.xsd__string;
 						}
 
 						if (obj_owl__allValuesFrom != null)
@@ -880,8 +884,14 @@ public class Fetcher
 
 					if (dateCreatedStr != null)
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.swrc__creationDate),
+						r.addProperty(ResourceFactory.createProperty(predicates.dc__created),
 								node.createLiteral(dateCreatedStr));
+					}
+
+					if (dateLastModified != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.dc__modified),
+								node.createLiteral(dateLastModified));
 					}
 
 					if (authorId != null)
@@ -1375,12 +1385,7 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()/*
-																									 * .
-																									 * getExtId
-																									 * (
-																									 * )
-																									 */));
+							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
 							node.createLiteral(department.getExtId()));

@@ -50,7 +50,7 @@ public class PacahonClient
 		{
 			int start_pos = result.indexOf("\"", pos) + 1;
 			int end_pos = result.indexOf("\"", start_pos);
-			ticket = result.substring(start_pos, end_pos - 1);
+			ticket = result.substring(start_pos, end_pos);
 		}
 
 		return ticket;
@@ -146,7 +146,7 @@ public class PacahonClient
 				{
 					result = result.substring(start + 2, stop);
 					result = result.replaceAll("\\\\\"", "\"");
-					result = result.replaceAll("\n", "\\n");
+//					result = result.replaceAll("\n", "\\n");
 
 					Model message = ModelFactory.createDefaultModel();
 

@@ -73,13 +73,16 @@ public class predicates
 	public static final String rdfs__label = rdfs + "label";
 	public static final String rdfs__comment = rdfs + "comment";
 
+	public static final String dc__dateSubmitted = dc + "dateSubmitted";
+	public static final String dc__modified = dc + "modified";
+	public static final String dc__created = dc + "created";
 	public static final String dc__creator = dc + "creator";
 	public static final String dc__identifier = dc + "identifier";
 	public static final String dc__subject = dc + "subject";
 	public static final String dc__title = dc + "title";
 	public static final String dc__type = dc + "type";
 	public static final String dc__description = dc + "description";
-	public static final String dc__date = dc + "date";
+//	public static final String dc__date = dc + "date";
 	public static final String dc__hasPart = dc + "hasPart";
 
 	public static final String swrc__Department = swrc + "Department";
@@ -93,7 +96,6 @@ public class predicates
 	public static final String swrc__email = swrc + "email";
 	public static final String swrc__phone = swrc + "phone";
 	public static final String swrc__photo = swrc + "photo";
-	public static final String swrc__creationDate = swrc + "creationDate";
 	public static final String swrc__endDate = swrc + "endDate";
 	public static final String swrc__startDate = swrc + "startDate";
 	public static final String swrc__keywords = swrc + "keywords";

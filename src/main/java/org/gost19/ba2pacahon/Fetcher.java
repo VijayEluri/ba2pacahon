@@ -1254,6 +1254,10 @@ public class Fetcher
 				Resource r = null;
 				String ouId = null;
 
+				r = node.createResource(predicates.zdb + "doc_" + department.getId());
+				r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+						ResourceFactory.createProperty(predicates.docs__unit_card));
+
 				if (isDepartment == true)
 				{
 					ouId = predicates.zdb + "dep_" + department.getId();
@@ -1636,7 +1640,7 @@ public class Fetcher
 							ResourceFactory.createProperty(predicates.auth__Authenticated));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.auth__login),
-							node.createLiteral(domainName));
+							node.createLiteral(domainName.toUpperCase()));
 
 					// writeTriplet(predicates.zdb + "person_" + userId,
 					// predicates.auth__credential, password, true,
@@ -2093,7 +2097,6 @@ public class Fetcher
 		}
 
 		loadProperties();
-		init_source();
 
 		organizationUtil = new OrganizationUtil(properties.getProperty("organizationUrl"),
 				properties.getProperty("organizationNameSpace"), properties.getProperty("organizationName"));
@@ -2102,6 +2105,8 @@ public class Fetcher
 		String ticket = pacahon_client.get_ticket("user", "9cXsvbvu8=");
 
 		fetchOrganization(pacahon_client, ticket);
+
+		init_source();
 		fetchDocumentTypes(pacahon_client, ticket);
 
 		Iterator<Entry<String, String>> it = old_code__new_code.entrySet().iterator();

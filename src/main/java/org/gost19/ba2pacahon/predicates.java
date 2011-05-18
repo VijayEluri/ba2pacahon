@@ -124,6 +124,7 @@ public class predicates
 	public static final String docs__employee_card = docs + "employee_card";
 	public static final String docs__employee = docs + "employee";
 	public static final String docs__organization_card = docs + "organization_card";
+	public static final String docs__unit_card = docs + "unit_card";
 	public static final String docs__group_card = docs + "group_card";
 	public static final String docs__pager = docs + "pager";
 	public static final String docs__carbon_copy = docs + "carbon_copy";

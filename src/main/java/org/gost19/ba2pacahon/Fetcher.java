@@ -53,6 +53,8 @@ public class Fetcher
 	private static String dbUser;
 	private static String dbPassword;
 	private static String dbUrl;
+	private static String destinationPoint;
+
 	private static HashMap<String, String> code_onto = new HashMap<String, String>();
 	private static HashMap<String, String> old_code__new_code = new HashMap<String, String>();
 	private static String exclude_codes_template = "$comment, $private, $authorId, $defaultRepresentation";
@@ -1391,7 +1393,7 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
 							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
 
-					r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
 							node.createLiteral(department.getExtId()));
 				}
 				if (parent != null)
@@ -1520,8 +1522,10 @@ public class Fetcher
 						// "magnet-ontology#id", a.getValue(), true);
 					} else if (a.getName().equalsIgnoreCase("pid"))
 					{
-						// writeTriplet(p.zdb + "doc_" + userId,
-						// "magnet-ontology#pid", a.getValue(), true);
+						String value = a.getValue();
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
+								node.createLiteral(value));
+
 					} else if (a.getName().equalsIgnoreCase("pager"))
 					{
 						String value = a.getValue();
@@ -1631,7 +1635,7 @@ public class Fetcher
 					// }
 				}
 
-				if (domainName != null && password != null)
+				if (domainName != null)
 				{
 					// обяьвим этого субьекта как аутентифицируемого и добавим
 					// необходимые данные, выгружаем в отдельный файл
@@ -2002,6 +2006,7 @@ public class Fetcher
 			dbUser = properties.getProperty("dbUser", "ba");
 			dbPassword = properties.getProperty("dbPassword", "123456");
 			dbUrl = properties.getProperty("dbUrl", "localhost:3306");
+			destinationPoint = properties.getProperty("destinationPoint", "localhost:5555");
 			// dbSuffix = properties.getProperty("dbSuffix", "");
 		} catch (IOException e)
 		{
@@ -2101,7 +2106,7 @@ public class Fetcher
 		organizationUtil = new OrganizationUtil(properties.getProperty("organizationUrl"),
 				properties.getProperty("organizationNameSpace"), properties.getProperty("organizationName"));
 
-		PacahonClient pacahon_client = new PacahonClient(null);
+		PacahonClient pacahon_client = new PacahonClient(destinationPoint);
 		String ticket = pacahon_client.get_ticket("user", "9cXsvbvu8=");
 
 		fetchOrganization(pacahon_client, ticket);

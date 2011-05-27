@@ -1447,7 +1447,7 @@ public class Fetcher
 				System.out.println(ii + " add user " + userId + ", oiud=" + predicates.zdb + "person_" + userId);
 
 				String userUri = predicates.zdb + "person_" + userId;
-
+								
 				ouUri__userObj.put(userUri, userEntity);
 
 				Model node = ModelFactory.createDefaultModel();
@@ -1480,7 +1480,12 @@ public class Fetcher
 								node.createLiteral("true"));
 					}
 
-					if (a.getName().equalsIgnoreCase("firstNameRu"))
+					if (a.getName().equalsIgnoreCase("doNotSynchronize") && a.getValue().equalsIgnoreCase("1"))
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__synchronize),
+								node.createLiteral("none"));						
+					}
+					else if (a.getName().equalsIgnoreCase("firstNameRu"))
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.swrc__firstName),
 								node.createLiteral(a.getValue(), "ru"));
@@ -1528,6 +1533,7 @@ public class Fetcher
 
 					} else if (a.getName().equalsIgnoreCase("pager"))
 					{
+						// http://www.w3.org/2006/vcard/ns#Pager
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
 							r.addProperty(ResourceFactory.createProperty(predicates.docs__pager),
@@ -1581,6 +1587,7 @@ public class Fetcher
 						// out);
 					} else if (a.getName().equalsIgnoreCase("mobile"))
 					{
+						// "http://www.w3.org/2006/vcard/ns#Cell"
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
 							r.addProperty(ResourceFactory.createProperty(predicates.swrc__phone),

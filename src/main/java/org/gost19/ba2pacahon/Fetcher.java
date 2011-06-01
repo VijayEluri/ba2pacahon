@@ -1103,6 +1103,15 @@ public class Fetcher
 
 		HashMap<String, String> roots = new HashMap<String, String>();
 
+		roots.put("627f267c-7595-4704-925a-00906f016977", "Сети продаж в Восточной и Центральной Европе (GPT)");
+		roots.put("1df41095-1e78-4d94-b951-5fc69b1e176b", "Сети продаж в Восточной и Центральной Европе (NAG)");
+		roots.put("e466381b-143d-4867-8c9f-dda0517bd9b1", "Монди Бизнес Пейпа Сейлз СНГ");
+		roots.put("1d37ea0b-3442-40a7-96c3-b230ef6ec639", "ЗАО \"НЭК\"");
+		roots.put("926abd62-c00d-4f9e-8e36-dcb76aa0c23a", "_Проект'STEP'");
+		roots.put("e1989131-9d6f-4647-b1de-1c68af0da148", "ООО 'Промсервис-Уют'");
+		roots.put("f0b7aa2c-ebf4-431a-812a-8c1cab633537", "Монди Пэкэджинг Пейпа Сейлз");
+		roots.put("e0197b44-97b3-413f-8524-3a83f75381c7", "ТП 'Бумажник");
+		roots.put("dbf04a9b-994c-44a7-9153-8341982f8390", "Сторонние организации");
 		roots.put("68d1d86b-4e20-4ba2-a677-940eb4b45a29", "ООО \"Топливно-заправочный комплекс\"");
 		roots.put("92e57b6d-83e3-485f-8885-0bade363f759", "ОАО \"Монди СЛПК\"");
 		roots.put("120c92a1-c738-4297-95ba-7a624a1343f7", "ООО \"Ксерокс (СНГ)\"");
@@ -1259,6 +1268,12 @@ public class Fetcher
 				r = node.createResource(predicates.zdb + "doc_" + department.getId());
 				r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 						ResourceFactory.createProperty(predicates.docs__unit_card));
+
+				if (department.doNotSyncronize == true)
+				{
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19__synchronize),
+							node.createLiteral("none"));
+				}
 
 				if (isDepartment == true)
 				{
@@ -1447,7 +1462,7 @@ public class Fetcher
 				System.out.println(ii + " add user " + userId + ", oiud=" + predicates.zdb + "person_" + userId);
 
 				String userUri = predicates.zdb + "person_" + userId;
-								
+
 				ouUri__userObj.put(userUri, userEntity);
 
 				Model node = ModelFactory.createDefaultModel();
@@ -1483,9 +1498,8 @@ public class Fetcher
 					if (a.getName().equalsIgnoreCase("doNotSynchronize") && a.getValue().equalsIgnoreCase("1"))
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.gost19__synchronize),
-								node.createLiteral("none"));						
-					}
-					else if (a.getName().equalsIgnoreCase("firstNameRu"))
+								node.createLiteral("none"));
+					} else if (a.getName().equalsIgnoreCase("firstNameRu"))
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.swrc__firstName),
 								node.createLiteral(a.getValue(), "ru"));
@@ -1533,16 +1547,15 @@ public class Fetcher
 
 					} else if (a.getName().equalsIgnoreCase("pager"))
 					{
-						// http://www.w3.org/2006/vcard/ns#Pager
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
-							r.addProperty(ResourceFactory.createProperty(predicates.docs__pager),
+							r.addProperty(ResourceFactory.createProperty(predicates.gost19__pager),
 									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("phone"))
 					{
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
-							r.addProperty(ResourceFactory.createProperty(predicates.swrc__phone),
+							r.addProperty(ResourceFactory.createProperty(predicates.gost19__internal_phone),
 									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("offlineDateBegin"))
 					{
@@ -1574,23 +1587,21 @@ public class Fetcher
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))
 					{
 						String value = a.getValue();
-						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId,
-						// predicates.swrc__phone, a.getValue(), true,
-						// out);
+						if (value != null && value.length() > 0)
+							r.addProperty(ResourceFactory.createProperty(predicates.gost19__mobile),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("phoneExt"))
 					{
 						String value = a.getValue();
-						// if (value != null && value.length() > 0)
-						// writeTriplet(predicates.zdb + "doc_" + userId,
-						// predicates.swrc__phone, a.getValue(), true,
-						// out);
+						if (value != null && value.length() > 0)
+							r.addProperty(ResourceFactory.createProperty(predicates.swrc__phone),
+									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("mobile"))
 					{
 						// "http://www.w3.org/2006/vcard/ns#Cell"
 						String value = a.getValue();
 						if (value != null && value.length() > 0)
-							r.addProperty(ResourceFactory.createProperty(predicates.swrc__phone),
+							r.addProperty(ResourceFactory.createProperty(predicates.gost19__work_mobile),
 									node.createLiteral(a.getValue()));
 					} else if (a.getName().equalsIgnoreCase("employeeCategoryR3"))
 					{

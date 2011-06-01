@@ -19,10 +19,12 @@ public class predicates
 	public static final String user_onto = "http://user-onto.org#";
 	public static final String msg = "http://gost19.org/message#";
 	public static final String query = "http://gost19.org/query#";
+	public static final String vcard = "http://www.w3.org/2006/vcard/ns#";
 
 	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
 			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix dc: <" + dc + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
-			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
+			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto + "> .\n" + "@prefix vcard: <" + vcard + "> .\n" 
+			+ "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
 			+ "> .\n" + "@prefix docs: <" + docs + "> .\n";
 
 	public static final String ns_f_user_onto = "http://user-onto.org";
@@ -101,6 +103,10 @@ public class predicates
 	public static final String swrc__keywords = swrc + "keywords";
 	public static final String swrc__number = swrc + "number";
 	public static final String swrc__note = swrc + "note";
+	
+	public static final String vcard__Pager = vcard + "Pager";
+	public static final String vcard__Cell = vcard + "Cell";
+	
 
 	public static final String gost19__middleName = gost19 + "middleName";
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
@@ -111,6 +117,11 @@ public class predicates
 	public static final String gost19__version = gost19 + "version";
 	public static final String gost19__tag = gost19 + "tag";
 	public static final String gost19__synchronize = gost19 + "synchronize";
+	public static final String gost19__pager = gost19 + "pager";
+	public static final String gost19__internal_phone = gost19 + "internal_phone";
+	public static final String gost19__work_phone = gost19 + "work_phone";
+	public static final String gost19__work_mobile = gost19 + "work_mobile";
+	public static final String gost19__mobile = gost19 + "mobile";
 	
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";
@@ -127,7 +138,6 @@ public class predicates
 	public static final String docs__organization_card = docs + "organization_card";
 	public static final String docs__unit_card = docs + "unit_card";
 	public static final String docs__group_card = docs + "group_card";
-	public static final String docs__pager = docs + "pager";
 	public static final String docs__carbon_copy = docs + "carbon_copy";
 	public static final String docs__dateInterval = docs + "dateInterval";
 	public static final String docs__contractor = docs + "contractor";
@@ -167,6 +177,7 @@ public class predicates
 			prefixs.put("dc", dc);			
 			prefixs.put("owl", owl);			
 			prefixs.put("xsd", xsd);			
+			prefixs.put("vcard", vcard);			
 		}
 
 		return prefixs;

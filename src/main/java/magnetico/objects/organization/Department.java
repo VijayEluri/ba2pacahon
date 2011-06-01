@@ -19,6 +19,7 @@ public class Department implements Serializable
 	private String extId;
 	private String organizationId;
 	private boolean isActive = false;
+	public boolean doNotSyncronize = false;
 
 	public Department()
 	{
@@ -48,8 +49,12 @@ public class Department implements Serializable
 				{
 					if (a.getValue().equals("true"))
 						setActive(true);
-				} // end else if
-
+				} else if (a.getName().equalsIgnoreCase("doNotSynchronize"))
+				{
+					if (a.getValue().equals("1"))
+						doNotSyncronize = true;
+				}
+				// end else if
 			}
 		} // end create_department()
 	}
@@ -113,8 +118,8 @@ public class Department implements Serializable
 	{
 		return nameRu;
 	}
-	
-	public String toString ()
+
+	public String toString()
 	{
 		return id + ":" + extId + ":" + nameRu + "\n";
 	}

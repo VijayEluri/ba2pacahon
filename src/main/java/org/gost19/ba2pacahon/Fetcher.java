@@ -1103,6 +1103,7 @@ public class Fetcher
 
 		HashMap<String, String> roots = new HashMap<String, String>();
 
+		roots.put("14dd8e2e-634f-4332-bc4d-4bc708a9ff64", "_ТЕЛЕФОНЫ СПЕЦВЫЗОВА"); 
 		roots.put("627f267c-7595-4704-925a-00906f016977", "Сети продаж в Восточной и Центральной Европе (GPT)");
 		roots.put("1df41095-1e78-4d94-b951-5fc69b1e176b", "Сети продаж в Восточной и Центральной Европе (NAG)");
 		roots.put("e466381b-143d-4867-8c9f-dda0517bd9b1", "Монди Бизнес Пейпа Сейлз СНГ");
@@ -1145,7 +1146,7 @@ public class Fetcher
 			// System.out.print(deps);
 
 			ArrayList<String> excludeNode = new ArrayList<String>();
-			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
+//			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
 												// СПЕЦВЫЗОВА
 			// excludeNode.add("1146725963873");
 			// excludeNode.add("1000");

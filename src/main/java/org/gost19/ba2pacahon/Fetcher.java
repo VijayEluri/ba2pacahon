@@ -1366,6 +1366,9 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__organization),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
 
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
+							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getId()));
+
 				} else if (isGroup)
 				{
 					ouId = predicates.zdb + "group_" + department.getId();

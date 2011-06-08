@@ -1546,7 +1546,7 @@ public class Fetcher
 					} else if (a.getName().equalsIgnoreCase("pid"))
 					{
 						String value = a.getValue();
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19, "externalIdentifer"),
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
 								node.createLiteral(value));
 
 					} else if (a.getName().equalsIgnoreCase("pager"))

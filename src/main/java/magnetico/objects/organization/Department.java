@@ -20,6 +20,14 @@ public class Department implements Serializable
 	private String organizationId;
 	private boolean isActive = false;
 	public boolean doNotSyncronize = false;
+	public String uid;
+
+	public static final byte _ORGANIZATION = 0;
+	public static final byte _GROUP = 1;
+	public static final byte _DEPARTMENT = 2;
+
+	public byte type = _DEPARTMENT; 
+
 
 	public Department()
 	{

@@ -1103,7 +1103,7 @@ public class Fetcher
 
 		HashMap<String, String> roots = new HashMap<String, String>();
 
-		roots.put("14dd8e2e-634f-4332-bc4d-4bc708a9ff64", "_ТЕЛЕФОНЫ СПЕЦВЫЗОВА"); 
+		roots.put("14dd8e2e-634f-4332-bc4d-4bc708a9ff64", "_ТЕЛЕФОНЫ СПЕЦВЫЗОВА");
 		roots.put("627f267c-7595-4704-925a-00906f016977", "Сети продаж в Восточной и Центральной Европе (GPT)");
 		roots.put("1df41095-1e78-4d94-b951-5fc69b1e176b", "Сети продаж в Восточной и Центральной Европе (NAG)");
 		roots.put("e466381b-143d-4867-8c9f-dda0517bd9b1", "Монди Бизнес Пейпа Сейлз СНГ");
@@ -1146,8 +1146,8 @@ public class Fetcher
 			// System.out.print(deps);
 
 			ArrayList<String> excludeNode = new ArrayList<String>();
-//			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
-												// СПЕЦВЫЗОВА
+			//			excludeNode.add("1154685117926");// 14dd8e2e-634f-4332-bc4d-4bc708a9ff64:1154685117926:_ТЕЛЕФОНЫ
+			// СПЕЦВЫЗОВА
 			// excludeNode.add("1146725963873");
 			// excludeNode.add("1000");
 			// excludeNode.add("123456");
@@ -1211,6 +1211,40 @@ public class Fetcher
 
 			for (Department department : deps)
 			{
+				String ouId = null;
+				String parent = child__parent.get(department.getId());
+
+				if (group__Id_name.get(department.getId()) != null)
+				{
+					department.type = Department._GROUP;
+					ouId = predicates.zdb + "group_" + department.getId();
+
+				} else if (parent == null)
+				{
+					department.type = Department._ORGANIZATION;
+					ouId = predicates.zdb + "org_" + department.getId();
+				} else
+				{
+					if (parent != null && parent.equals(structure_id))
+					{
+						parent = null;
+						department.type = Department._ORGANIZATION;
+						ouId = predicates.zdb + "org_" + department.getId();
+					} else
+					{
+						department.type = Department._DEPARTMENT;
+						ouId = predicates.zdb + "dep_" + department.getId();
+					}
+
+				}
+				department.uid = ouId;
+
+			}
+
+			for (Department department : deps)
+			{
+				String parent = child__parent.get(department.getId());
+
 				ii++;
 
 				if (department.getExtId() == null)
@@ -1223,30 +1257,6 @@ public class Fetcher
 				{
 					System.out.println("exclude node:" + department.getExtId());
 					continue;
-				}
-
-				String parent = child__parent.get(department.getId());
-				boolean isOrganization = false;
-				boolean isDepartment = false;
-				boolean isGroup = false;
-
-				if (group__Id_name.get(department.getId()) != null)
-				{
-					isGroup = true;
-				} else if (parent == null)
-				{
-					isOrganization = true;
-				} else
-				{
-					if (parent != null && parent.equals(structure_id))
-					{
-						parent = null;
-						isOrganization = true;
-					} else
-					{
-						isDepartment = true;
-					}
-
 				}
 
 				// if (parent != null && parent.equals(structure_id) &&
@@ -1264,7 +1274,6 @@ public class Fetcher
 
 				Resource r_ou = null;
 				Resource r = null;
-				String ouId = null;
 
 				r = node.createResource(predicates.zdb + "doc_" + department.getId());
 				r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -1276,32 +1285,18 @@ public class Fetcher
 							node.createLiteral("none"));
 				}
 
-				if (isDepartment == true)
+				if (department.type == Department._DEPARTMENT)
 				{
-					ouId = predicates.zdb + "dep_" + department.getId();
+					System.out.println(ii + " add department " + department.getNameRu() + ", ouid=" + department.uid);
 
-					System.out.println(ii + " add department " + department.getNameRu() + ", ouid=" + ouId);
-
-					r_ou = node.createResource(ouId);
+					r_ou = node.createResource(department.uid);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.swrc__Department));
-
-					if (department.isActive())
-					{
-						r_ou.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
 
 					r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.docs__department_card));
 
-					if (department.isActive())
-					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
-
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
 							node.createLiteral(department.getNameRu(), "ru"));
 
@@ -1311,48 +1306,55 @@ public class Fetcher
 								node.createLiteral(department.getNameEn(), "en"));
 					}
 
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
-
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__organization),
 							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getOrganizationId()));
 
-					r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
-							node.createLiteral(department.getExtId()));
-
-				} else if (isOrganization)
+				} else if (department.type == Department._ORGANIZATION)
 				{
-					ouId = predicates.zdb + "org_" + department.getId();
+					System.out.println(ii + " add organization " + department.getNameRu() + ", ouid=" + department.uid);
 
-					System.out.println(ii + " add organization " + department.getNameRu() + ", ouid=" + ouId);
-
-					r_ou = node.createResource(ouId);
+					r_ou = node.createResource(department.uid);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.swrc__Organization));
-
-					if (department.isActive())
-					{
-						r_ou.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
 
 					r = node.createResource(predicates.zdb + "doc_" + department.getId());
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.docs__organization_card));
 
-					if (department.isActive())
-					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
 					if (roots.get(department.getId()) != null)
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.gost19__tag),
 								node.createLiteral("root"));
 					}
 
-					r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
-							node.createLiteral(department.getExtId()));
+					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
+							node.createLiteral(department.getNameRu(), "ru"));
+
+					if (department.getNameEn() != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
+								node.createLiteral(department.getNameEn(), "en"));
+					}
+
+					//					r.addProperty(ResourceFactory.createProperty(predicates.swrc__organization),
+					//							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
+				} else if (department.type == Department._GROUP)
+				{
+					System.out.println(ii + " add group " + department.getNameRu() + ", ouid=" + department.uid);
+
+					r_ou = node.createResource(department.uid);
+					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+							ResourceFactory.createProperty(predicates.docs__Group));
+
+					r = node.createResource(predicates.zdb + "doc_" + department.getId());
+					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+							ResourceFactory.createProperty(predicates.docs__group_card));
+
+					if (roots.get(department.getId()) != null)
+					{
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__tag),
+								node.createLiteral("root"));
+					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
 							node.createLiteral(department.getNameRu(), "ru"));
@@ -1364,75 +1366,35 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__organization),
-							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
+							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getOrganizationId()));
 
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getId()));
-
-				} else if (isGroup)
-				{
-					ouId = predicates.zdb + "group_" + department.getId();
-
-					System.out.println(ii + " add group " + department.getNameRu() + ", ouid=" + ouId);
-
-					r_ou = node.createResource(ouId);
-					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-							ResourceFactory.createProperty(predicates.docs__Group));
-
-					if (department.isActive())
-					{
-						r_ou.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
-
-					r = node.createResource(predicates.zdb + "doc_" + department.getId());
-					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-							ResourceFactory.createProperty(predicates.docs__group_card));
-
-					if (department.isActive())
-					{
-						r.addProperty(ResourceFactory.createProperty(predicates.docs__active),
-								node.createLiteral("true"));
-					}
-					if (roots.get(department.getId()) != null)
-					{
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19__tag),
-								node.createLiteral("root"));
-					}
-
-					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
-							node.createLiteral(department.getNameRu(), "ru"));
-
-					if (department.getNameEn() != null)
-					{
-						r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
-								node.createLiteral(department.getNameEn(), "en"));
-					}
-
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
-
-					r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
-							node.createLiteral(department.getExtId()));
 				}
 				if (parent != null)
 				{
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
-							ResourceFactory.createProperty(predicates.zdb, "dep_" + parent));
-
 					Department dep = departments__id.get(parent);
 
-					if (dep == null)
-					{
-						System.out.print("");
-					}
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
+							ResourceFactory.createProperty(dep.uid));
 
 					write_add_info_of_attribute(predicates.zdb + "doc_" + department.getId(),
-							predicates.docs__parentUnit, predicates.zdb + "dep_" + parent, predicates.swrc__name,
-							dep.getNameRu(), node);
+							predicates.docs__parentUnit, dep.uid, predicates.swrc__name, dep.getNameRu(), node);
 				}
 
-				ouUri__userObj.put(ouId, department);
+				if (department.isActive())
+				{
+					r_ou.addProperty(ResourceFactory.createProperty(predicates.docs__active),
+							node.createLiteral("true"));
+
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__active), node.createLiteral("true"));
+				}
+
+				r.addProperty(ResourceFactory.createProperty(predicates.docs__unit),
+						ResourceFactory.createProperty(department.uid));
+
+				r.addProperty(ResourceFactory.createProperty(predicates.gost19__externalIdentifer),
+						node.createLiteral(department.getExtId()));
+
+				ouUri__userObj.put(department.uid, department);
 
 				// TODO возможно нужно будет записать и детишек
 				// for (String child : childs.get(department.getId()))
@@ -1581,11 +1543,10 @@ public class Fetcher
 						else
 						{
 							r.addProperty(ResourceFactory.createProperty(predicates.docs__parentUnit),
-									ResourceFactory.createProperty(predicates.zdb, "dep_" + department.getId()));
+									ResourceFactory.createProperty(department.uid));
 
 							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__parentUnit,
-									predicates.zdb + "dep_" + department.getId(), predicates.swrc__name,
-									department.getNameRu(), node);
+									department.uid, predicates.swrc__name, department.getNameRu(), node);
 						}
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))

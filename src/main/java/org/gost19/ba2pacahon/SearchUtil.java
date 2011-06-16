@@ -64,9 +64,9 @@ public class SearchUtil {
 		requestBase.setRequestData(createHSearchRequest(requestData));
 		SearchResponseType searchResponse = endpoint.searchSync(ticketId,
 				requestBase);
-		if (searchResponse.isErrorOccurred())
-			throw new IllegalStateException(
-					"Exception occured while requesting: " + requestData);
+//		if (searchResponse.isErrorOccurred())
+//			throw new IllegalStateException(
+//					"Exception occured while requesting: " + requestData);
 
 		int offset = 0;
 		int quant = 1000;

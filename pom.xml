@@ -14,6 +14,33 @@
 <!--        <scope>provided</scope> -->
         </dependency>
 
+
+        <dependency>
+           <groupId>org.zeromq</groupId>
+           <artifactId>jzmq</artifactId>
+           <version>2.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.gost19.pacahon.client</groupId>
+            <artifactId>pacahon-client</artifactId>
+            <version>0.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.gost19.pacahon.client</groupId>
+            <artifactId>ba-pacahon-driver</artifactId>
+            <version>0.6-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+                <groupId>ru.magnetosoft.bigarchive.client.web</groupId>
+                <artifactId>bacw-import</artifactId>
+                <version>0.14.75-SNAPSHOT</version>
+<!--                <scope>provided</scope> -->
+        </dependency>
+
+
         <dependency>
             <groupId>com.hp.hpl.jena</groupId>
             <artifactId>jena</artifactId>
@@ -25,29 +52,15 @@
             <version>2.1.5</version>
             <type>pom</type>
         </dependency>
-        <dependency>
-            <artifactId>big-archive-client-web-objects</artifactId>
-            <groupId>ru.magnetosoft.bigarchive.client.web</groupId>
-            <version>0.14.75-SNAPSHOT</version>
-        </dependency>
         
         
-<!--        <dependency>
-            <groupId>ru.magnetosoft.magnet</groupId>
-            <artifactId>magnet-commons-client</artifactId>
-            <version>1.5.15-SNAPSHOT</version> 
-        </dependency>                          -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <version>4.4</version>
         </dependency>
-<!--        <dependency>
-            <groupId>ru.magnetosoft.magnet</groupId>
-            <artifactId>magnet-messaging</artifactId>
-            <version>0.0.2-SNAPSHOT</version> 
-        </dependency>                         -->
+
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -142,9 +155,6 @@
                                 <echo message="Generate AttachmentService WS artifacts..." />
                                 <mkdir dir="${project.build.outputDirectory}" />
                                 <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/AttachmentService.wsdl" package="magnetico.ws.attachment" />
-                                <mkdir dir="${project.build.outputDirectory}" />
-                                <echo message="Generate Organization WS artifacts..." />
-                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/OrganizationEntityService.wsdl" package="magnetico.ws.organization" />
                             </tasks>
                         </configuration>
                         <goals>

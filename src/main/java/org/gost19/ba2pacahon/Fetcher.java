@@ -20,20 +20,23 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import magnetico.objects.organization.Department;
-import magnetico.ws.organization.AttributeType;
-import magnetico.ws.organization.EntityType;
 import net.n3.nanoxml.IXMLElement;
 import net.n3.nanoxml.IXMLParser;
 import net.n3.nanoxml.IXMLReader;
 import net.n3.nanoxml.StdXMLReader;
 import net.n3.nanoxml.XMLParserFactory;
 
+import ru.magnetosoft.bigarch.wsclient.bl.organizationservice.AttributeType;
+import ru.magnetosoft.bigarch.wsclient.bl.organizationservice.EntityType;
+
+import org.gost19.pacahon.ba_organization_driver.BaOrganizationDriver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import ru.magnetosoft.objects.organization.Department;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -73,6 +76,8 @@ public class Fetcher
 	private static Map<String, String[]> templateUri_fieldUri__takedUri = new HashMap<String, String[]>();
 
 	private static DocumentBuilder db = null;
+
+	private static BaOrganizationDriver org_driver = null;
 
 	/**
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
@@ -1160,13 +1165,14 @@ public class Fetcher
 			HashMap<String, String> child__parent = new HashMap<String, String>();
 			for (Department department : deps)
 			{
-				if (department.getExtId() == null)
+				if (department.getInternalId() == null)
 					continue;
 
-				if (excludeNode.contains(department.getExtId()) == true)
+				if (excludeNode.contains(department.getInternalId()) == true)
 					continue;
 
-				List<Department> childDeps = organizationUtil.getDepartmentsByParentId(department.getExtId(), "Ru");
+				List<Department> childDeps = organizationUtil
+						.getDepartmentsByParentId(department.getInternalId(), "Ru");
 
 				// ArrayList<String> breed = new ArrayList<String>();
 				for (Department child : childDeps)
@@ -1177,7 +1183,7 @@ public class Fetcher
 				// childs.put(department.getId(), breed);
 
 				departments__id.put(department.getId(), department);
-				extId__id.put(department.getExtId(), department.getId());
+				extId__id.put(department.getInternalId(), department.getId());
 				buCounter++;
 			}
 
@@ -1247,15 +1253,15 @@ public class Fetcher
 
 				ii++;
 
-				if (department.getExtId() == null)
+				if (department.getInternalId() == null)
 				{
-					System.out.println("exclude node:" + department.getExtId());
+					System.out.println("exclude node:" + department.getInternalId());
 					continue;
 				}
 
-				if (excludeNode.contains(department.getExtId()) == true)
+				if (excludeNode.contains(department.getInternalId()) == true)
 				{
-					System.out.println("exclude node:" + department.getExtId());
+					System.out.println("exclude node:" + department.getInternalId());
 					continue;
 				}
 
@@ -1287,7 +1293,7 @@ public class Fetcher
 
 				if (department.type == Department._DEPARTMENT)
 				{
-					System.out.println(ii + " add department " + department.getNameRu() + ", ouid=" + department.uid);
+					System.out.println(ii + " add department " + department.getName("ru") + ", ouid=" + department.uid);
 
 					r_ou = node.createResource(department.uid);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -1298,7 +1304,7 @@ public class Fetcher
 							ResourceFactory.createProperty(predicates.docs__department_card));
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
-							node.createLiteral(department.getNameRu(), "ru"));
+							node.createLiteral(department.getName("ru"), "ru"));
 
 					if (department.getNameEn() != null)
 					{
@@ -1311,7 +1317,8 @@ public class Fetcher
 
 				} else if (department.type == Department._ORGANIZATION)
 				{
-					System.out.println(ii + " add organization " + department.getNameRu() + ", ouid=" + department.uid);
+					System.out.println(ii + " add organization " + department.getName("ru") + ", ouid="
+							+ department.uid);
 
 					r_ou = node.createResource(department.uid);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -1328,7 +1335,7 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
-							node.createLiteral(department.getNameRu(), "ru"));
+							node.createLiteral(department.getName("ru"), "ru"));
 
 					if (department.getNameEn() != null)
 					{
@@ -1340,7 +1347,7 @@ public class Fetcher
 					//							ResourceFactory.createProperty(predicates.zdb, "org_" + department.getExtId()));
 				} else if (department.type == Department._GROUP)
 				{
-					System.out.println(ii + " add group " + department.getNameRu() + ", ouid=" + department.uid);
+					System.out.println(ii + " add group " + department.getName("ru") + ", ouid=" + department.uid);
 
 					r_ou = node.createResource(department.uid);
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
@@ -1357,7 +1364,7 @@ public class Fetcher
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.swrc__name),
-							node.createLiteral(department.getNameRu(), "ru"));
+							node.createLiteral(department.getName("ru"), "ru"));
 
 					if (department.getNameEn() != null)
 					{
@@ -1377,10 +1384,10 @@ public class Fetcher
 							ResourceFactory.createProperty(dep.uid));
 
 					write_add_info_of_attribute(predicates.zdb + "doc_" + department.getId(),
-							predicates.docs__parentUnit, dep.uid, predicates.swrc__name, dep.getNameRu(), node);
+							predicates.docs__parentUnit, dep.uid, predicates.swrc__name, dep.getName("ru"), node);
 				}
 
-				if (department.isActive())
+				if (department.isActive)
 				{
 					r_ou.addProperty(ResourceFactory.createProperty(predicates.docs__active),
 							node.createLiteral("true"));
@@ -1546,7 +1553,7 @@ public class Fetcher
 									ResourceFactory.createProperty(department.uid));
 
 							write_add_info_of_attribute(predicates.zdb + "doc_" + userId, predicates.docs__parentUnit,
-									department.uid, predicates.swrc__name, department.getNameRu(), node);
+									department.uid, predicates.swrc__name, department.getName("ru"), node);
 						}
 
 					} else if (a.getName().equalsIgnoreCase("mobilePrivate"))
@@ -1809,7 +1816,7 @@ public class Fetcher
 						String id = extId__id.get(value);
 						Department department = departments__id.get(id);
 						write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name,
-								department.getNameRu(), node);
+								department.getName("ru"), node);
 
 					}
 				}
@@ -2086,13 +2093,30 @@ public class Fetcher
 
 		loadProperties();
 
-		organizationUtil = new OrganizationUtil(properties.getProperty("organizationUrl"),
-				properties.getProperty("organizationNameSpace"), properties.getProperty("organizationName"));
-
 		PacahonClient pacahon_client = new PacahonClient(destinationPoint);
 		String ticket = pacahon_client.get_ticket("user", "9cXsvbvu8=");
 
-		fetchOrganization(pacahon_client, ticket);
+		if (properties.getProperty("organizationUrl") != null)
+		{
+			organizationUtil = new OrganizationUtil(properties.getProperty("organizationUrl"),
+					properties.getProperty("organizationNameSpace"), properties.getProperty("organizationName"));
+
+			fetchOrganization(pacahon_client, ticket);
+		}
+
+		if (properties.getProperty("organizationPoint") != null)
+		{
+			String endpoint_pretending_organization = properties.getProperty("organizationPoint");
+			org_driver = new BaOrganizationDriver(endpoint_pretending_organization);
+			List<Department> list_deps = org_driver.getAllDepartments(true, "org.gost19.ba2pacahon.Fetcher:main()");
+			departments__id = new HashMap<String, Department>();
+
+			for (Department dep : list_deps)
+			{
+				departments__id.put(dep.getId(), dep);
+			}
+
+		}
 
 		init_source();
 		fetchDocumentTypes(pacahon_client, ticket);
@@ -2109,8 +2133,7 @@ public class Fetcher
 
 		fetchDocuments(pacahon_client, ticket);
 
-		System.out.println("end... sleep...");
-
-		Thread.currentThread().sleep(999999999);
+		//		System.out.println("end... sleep...");
+		//		Thread.currentThread().sleep(999999999);
 	}
 }

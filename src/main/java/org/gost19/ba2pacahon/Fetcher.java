@@ -1214,25 +1214,58 @@ public class Fetcher
 			return;
 
 		String ouUri = predicates.zdb + "person_" + ouId;
-		String ouDocUri = predicates.zdb + "doc_" + ouId;
-		Object qqq = ouUri__userObj.get(ouUri);
+		Object ouObj = ouUri__userObj.get(ouUri);
 
-		if (qqq != null)
+		if (ouObj == null)
 		{
+			ouUri = predicates.zdb + "dep_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "org_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "group_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "person_34fb5949-7d28-4cf5-91d0-93b5d773ce17";
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+			throw new Exception("user [" + ouId + "] not found");
+
+		if (ouObj != null)
+		{
+			String ouDocUri = predicates.zdb + "doc_" + ouId;
 			r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(ouUri));
 
 			write_add_info_of_attribute(docUri, attUri, ouUri, ResourceFactory.createProperty(predicates.docs__source),
 					ResourceFactory.createProperty(ouDocUri), node);
 
-			if (qqq instanceof ru.magnetosoft.objects.organization.User)
+			if (ouObj instanceof ru.magnetosoft.objects.organization.User)
 			{
-				User user = (User) qqq;
+				User user = (User) ouObj;
 
-				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, user.getName(), node);
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, user.getName(), node);
 
-			} else
+			} else if (ouObj instanceof ru.magnetosoft.objects.organization.Department)
 			{
-				EntityType person = (EntityType) qqq;
+				Department dep = (Department) ouObj;
+
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, dep.getName(), node);
+			} else if (ouObj instanceof ru.magnetosoft.objects.organization.OrganizationUnit)
+			{
+				ru.magnetosoft.objects.organization.OrganizationUnit ou = (ru.magnetosoft.objects.organization.OrganizationUnit) ouObj;
+
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, ou.getName(), node);
+			} else if (ouObj instanceof EntityType)
+			{
+				EntityType person = (EntityType) ouObj;
 
 				for (AttributeType a : person.getAttributes().getAttributeList())
 				{
@@ -1265,26 +1298,7 @@ public class Fetcher
 					}
 				}
 			}
-		} else if (qqq == null)
-		{
-			ouUri = predicates.zdb + "dep_" + ouId;
-			qqq = ouUri__userObj.get(ouUri);
 		}
-
-		if (qqq == null)
-		{
-			ouUri = predicates.zdb + "org_" + ouId;
-			qqq = ouUri__userObj.get(ouUri);
-		}
-
-		if (qqq == null)
-		{
-			ouUri = predicates.zdb + "group_" + ouId;
-			qqq = ouUri__userObj.get(ouUri);
-		}
-
-		if (qqq == null)
-			throw new Exception("user [" + ouId + "] not found");
 
 	}
 
@@ -1549,12 +1563,23 @@ public class Fetcher
 			{
 				String endpoint_pretending_organization = properties.getProperty("organizationPoint");
 				org_driver = new BaOrganizationDriver(endpoint_pretending_organization);
-				List<Department> list_deps = org_driver.getAllDepartments(true, "org.gost19.ba2pacahon.Fetcher:main()");
+				List<Department> list_deps = org_driver
+						.getAllDepartments(false, "org.gost19.ba2pacahon.Fetcher:main()");
 				departments__id = new HashMap<String, Department>();
 
 				for (Department dep : list_deps)
 				{
+					System.out.println("dep: " + dep.getId());
+
 					departments__id.put(dep.getId(), dep);
+
+					if (dep.type == dep._ORGANIZATION)
+						ouUri__userObj.put(predicates.zdb + "org_" + dep.getId(), dep);
+					if (dep.type == dep._GROUP)
+						ouUri__userObj.put(predicates.zdb + "group_" + dep.getId(), dep);
+					if (dep.type == dep._DEPARTMENT)
+						ouUri__userObj.put(predicates.zdb + "dep_" + dep.getId(), dep);
+
 					List<User> users = org_driver.getUsersByDepartmentId(dep.getExtId(), "ru", true, false,
 							"ba2pacahon.Fetcher.main");
 
@@ -1562,6 +1587,7 @@ public class Fetcher
 					{
 						ouUri__userObj.put(predicates.zdb + "person_" + uu.getId(), uu);
 					}
+
 				}
 
 			} else if (properties.getProperty("organizationUrl") != null)

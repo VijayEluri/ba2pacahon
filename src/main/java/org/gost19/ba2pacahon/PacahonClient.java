@@ -139,12 +139,14 @@ public class PacahonClient
 			pos = result.indexOf("msg:result");
 			if (pos > 0)
 			{
-				int start = result.indexOf("\"\"", pos);
-				int stop = result.indexOf("\"\"", start + 2);
+				int start = result.indexOf("\"\"\"", pos);
+				int stop = result.indexOf("\"\"\"", start + 3);
 
 				if (stop > 0)
 				{
-					result = result.substring(start + 2, stop);
+					result = result.substring(start + 3, stop);
+					
+					// заменить только наружние экранированные кавычки
 					result = result.replaceAll("\\\\\"", "\"");
 //					result = result.replaceAll("\n", "\\n");
 

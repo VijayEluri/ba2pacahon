@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xs:schema version="1.0" targetNamespace="http://documents.bigarchive.magnetosoft.ru/" xmlns:tns="http://documents.bigarchive.magnetosoft.ru/" xmlns:ns1="http://validation.bigarchive.magnetosoft.ru/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema version="1.0" targetNamespace="http://documents.bigarchive.mndsc.ru/" xmlns:tns="http://documents.bigarchive.mndsc.ru/" xmlns:ns1="http://validation.bigarchive.mndsc.ru/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:import namespace="http://validation.bigarchive.magnetosoft.ru/" schemaLocation="DocumentService_schema1.xsd"/>
+  <xs:import namespace="http://validation.bigarchive.mndsc.ru/" schemaLocation="DocumentService_schema1.xsd"/>
 
   <xs:element name="AccessDeniedException" type="tns:AccessDeniedException"/>
 

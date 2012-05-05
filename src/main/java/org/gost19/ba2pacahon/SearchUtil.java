@@ -7,16 +7,16 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.HashMapEntryType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.HashMapType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.MapDataType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchEndpoint;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchRequestType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchResponseType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchResultResponseType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchResultsRequestType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchResultsResponseType;
-import ru.magnetosoft.bigarch.wsclient.bl.searchservice.SearchService;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.HashMapEntryType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.HashMapType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.MapDataType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchEndpoint;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchRequestType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResponseType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResultResponseType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResultsRequestType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResultsResponseType;
+import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchService;
 
 public class SearchUtil {
 

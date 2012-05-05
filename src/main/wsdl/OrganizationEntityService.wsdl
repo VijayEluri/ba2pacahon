@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<definitions targetNamespace="http://organization.magnet.magnetosoft.ru/" name="OrganizationEntityService" xmlns:tns="http://organization.magnet.magnetosoft.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+<definitions targetNamespace="http://organization.zdms_component.mndsc.ru/" name="OrganizationEntityService" xmlns:tns="http://organization.zdms_component.mndsc.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema>
-      <xsd:import namespace="http://organization.magnet.magnetosoft.ru/" schemaLocation="OrganizationEntityService_schema1.xsd"/>
+      <xsd:import namespace="http://organization.zdms_component.mndsc.ru/" schemaLocation="OrganizationEntityService_schema1.xsd"/>
     </xsd:schema>
   </types>
   <message name="getEntity">

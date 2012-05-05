@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,9 +25,7 @@ import net.n3.nanoxml.IXMLReader;
 import net.n3.nanoxml.StdXMLReader;
 import net.n3.nanoxml.XMLParserFactory;
 
-import ru.magnetosoft.bigarch.wsclient.bl.organizationservice.AttributeType;
-import ru.magnetosoft.bigarch.wsclient.bl.organizationservice.EntityType;
-
+import org.gost19.ba2pacahon.predicates;
 import org.gost19.pacahon.ba_organization_driver.BaOrganizationDriver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,8 +33,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import ru.magnetosoft.objects.organization.Department;
-import ru.magnetosoft.objects.organization.User;
+import ru.mndsc.bigarch.wsclient.bl.organizationservice.AttributeType;
+import ru.mndsc.bigarch.wsclient.bl.organizationservice.EntityType;
+import ru.mndsc.objects.organization.Department;
+import ru.mndsc.objects.organization.User;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -63,7 +62,9 @@ public class Fetcher
 	private static HashMap<String, String> old_code__new_code = new HashMap<String, String>();
 	private static String exclude_codes_template = "$comment, $private, $authorId, $defaultRepresentation";
 	private static String exclude_codes_doc = "$private";
+
 	static HashMap<String, Object> ouUri__userObj = new HashMap<String, Object>();
+	static HashMap<String, String> ouId__ouUri = new HashMap<String, String>();
 
 	private static HashMap<String, String> recordId__versionId = new HashMap<String, String>();
 	private static HashMap<String, String> docUri__templateUri = new HashMap<String, String>();
@@ -73,12 +74,11 @@ public class Fetcher
 
 	private static Map<String, String[]> templateId__defaultRepresentation = new HashMap<String, String[]>();
 	private static Map<String, String[]> templateUri_fieldUri__takedUri = new HashMap<String, String[]>();
+	private static Map<String, LangString> templateUri_label = new HashMap<String, LangString>();
 
 	private static DocumentBuilder db = null;
 
 	private static BaOrganizationDriver org_driver = null;
-
-	static OldOrganizationUtil old_organization_utils;
 
 	/**
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
@@ -93,18 +93,12 @@ public class Fetcher
 		// versionId__recordId = new HashMap<String, String>();
 		// recordId__versionId = new HashMap<String, String>();
 
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
-		// predicates.dc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
-		// predicates.f_swrc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
-		// predicates.gost19, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
-		// predicates.docs, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
-		// predicates.user_onto, false);
-		// writeTriplet(predicates.f_user_onto, predicates.rdf__type,
-		// predicates.owl__Ontology, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.dc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.f_swrc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.gost19, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.docs, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.user_onto, false);
+		// writeTriplet(predicates.f_user_onto, predicates.rdf__type, predicates.owl__Ontology, false);
 
 		ResultSet templatesRs = connection.createStatement().executeQuery(
 				"select objectId FROM objects where isTemplate = 1 and timestamp is null");
@@ -114,8 +108,8 @@ public class Fetcher
 			String docId = templatesRs.getString(1);
 			// System.out.println("templateId = " + docId);
 
-			String docDataQuery = "select distinct content, kindOf, timestamp, recordId FROM objects where objectId = '"
-					+ docId + "' order by timestamp desc";
+			String docDataQuery = "select distinct content, kindOf, timestamp, recordId FROM objects where objectId = '" + docId
+					+ "' order by timestamp desc";
 			Statement st1 = connection.createStatement();
 			ResultSet templateRecordRs = st1.executeQuery(docDataQuery);
 
@@ -137,7 +131,7 @@ public class Fetcher
 				String recordId = templateRecordRs.getString(4);
 
 				IXMLReader reader = StdXMLReader.stringReader(docXmlStr);
-				// System.out.println(docXmlStr);
+				System.out.println(docXmlStr);
 
 				parser.setReader(reader);
 				IXMLElement xmlDoc = (IXMLElement) parser.parse(true);
@@ -247,8 +241,7 @@ public class Fetcher
 
 				if (kindOf == 0)
 				{
-					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
-							node.createLiteral("user_template"));
+					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf), node.createLiteral("user_template"));
 				} else if (kindOf == 1)
 				{
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__kindOf),
@@ -283,12 +276,12 @@ public class Fetcher
 				LangString lName = LangString.parse(name);
 
 				if (lName.text_ru != null)
-					r.addProperty(ResourceFactory.createProperty(predicates.rdfs__label),
-							node.createLiteral(lName.text_ru, "ru"));
+					r.addProperty(ResourceFactory.createProperty(predicates.rdfs__label), node.createLiteral(lName.text_ru, "ru"));
 
 				if (lName.text_en != null)
-					r.addProperty(ResourceFactory.createProperty(predicates.rdfs__label),
-							node.createLiteral(lName.text_en, "en"));
+					r.addProperty(ResourceFactory.createProperty(predicates.rdfs__label), node.createLiteral(lName.text_en, "en"));
+
+				templateUri_label.put(tmplate_id, lName);
 
 				// /////////////////////////////////////////////////////////////////////////////////////////////
 				Vector<IXMLElement> atts = null;
@@ -325,8 +318,7 @@ public class Fetcher
 							continue;
 						}
 
-						String restrictionId = predicates.user_onto + "template_" + id + "_v_" + count_of_version
-								+ "_f_" + ii;
+						String restrictionId = predicates.user_onto + "template_" + id + "_v_" + count_of_version + "_f_" + ii;
 
 						// System.out.println("\n");
 
@@ -336,8 +328,7 @@ public class Fetcher
 
 						if (textValue != null)
 						{
-							r.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
-									node.createLiteral(textValue));
+							r.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue), node.createLiteral(textValue));
 						}
 
 						r.addProperty(ResourceFactory.createProperty(predicates.gost19__isRelatedTo),
@@ -346,8 +337,7 @@ public class Fetcher
 						rr.addProperty(ResourceFactory.createProperty(predicates.gost19__isRelatedTo),
 								node.createProperty(predicates.docs__Document));
 
-						rr.addProperty(ResourceFactory.createProperty(predicates.dc__hasPart),
-								node.createProperty(tmplate_id));
+						rr.addProperty(ResourceFactory.createProperty(predicates.dc__hasPart), node.createProperty(tmplate_id));
 
 						r.addProperty(ResourceFactory.createProperty(predicates.rdfs__subClassOf),
 								node.createProperty(restrictionId));
@@ -381,8 +371,7 @@ public class Fetcher
 						rr.addProperty(ResourceFactory.createProperty(predicates.owl__onProperty),
 								node.createProperty(this_code_in_onto));
 
-						rr.addProperty(ResourceFactory.createProperty(predicates.dc__identifier),
-								node.createLiteral(code));
+						rr.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(code));
 
 						code_stat.put(code, count);
 
@@ -465,17 +454,14 @@ public class Fetcher
 								if (dictionaryIdValue != null)
 								{
 									// тип спраочника
-									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + dictionaryIdValue
-											+ "_v_1";
+									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + dictionaryIdValue + "_v_1";
 
-									String dictionaryNameValue = util
-											.get(att_list_element, "dictionaryNameValue", null);
+									String dictionaryNameValue = util.get(att_list_element, "dictionaryNameValue", null);
 
 									if (dictionaryNameValue != null)
 									{
 										write_add_info_of_attribute(restrictionId, predicates.owl__allValuesFrom,
-												obj_owl__allValuesFrom, predicates.swrc__name, dictionaryNameValue,
-												node);
+												obj_owl__allValuesFrom, predicates.swrc__name, dictionaryNameValue, node);
 									}
 
 									// Значение по умолчанию
@@ -564,15 +550,13 @@ public class Fetcher
 														i++;
 													}
 
-													rr.addProperty(
-															ResourceFactory.createProperty(predicates.gost19__take),
+													rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 															node.createLiteral(new_code));
 													take[j] = new_code;
 													j++;
 												}
 
-												templateUri_fieldUri__takedUri.put(
-														tmplate_id + "+" + this_code_in_onto, take);
+												templateUri_fieldUri__takedUri.put(tmplate_id + "+" + this_code_in_onto, take);
 
 											}
 										}
@@ -600,11 +584,9 @@ public class Fetcher
 							// department ? organization
 							String organizationTag = util.get(att_list_element, "organizationTag", "");
 
-							String[] organizationTags = organizationTag.split(";");
-
-							for (String tag : organizationTags)
+							if (organizationTag != null && organizationTag.length() > 3)
 							{
-								if (tag.equals("user"))
+								if (organizationTag.indexOf("user") >= 0)
 								{
 									// для этого типа нужно добавить:
 
@@ -614,24 +596,39 @@ public class Fetcher
 									rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 											ResourceFactory.createProperty(predicates.swrc__firstName));
 
-									if (organizationTags.length == 1)
-										rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
-												ResourceFactory.createProperty(predicates.swrc__Person));
-									else
+									if (organizationTag.indexOf(";") > 0)
 										rr.addProperty(ResourceFactory.createProperty(predicates.owl__someValuesFrom),
 												ResourceFactory.createProperty(predicates.swrc__Person));
+									else
+										rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
+												ResourceFactory.createProperty(predicates.swrc__Person));
 
-								} else if (tag.equals("department"))
+								}
+								if (organizationTag.indexOf("department") >= 0)
 								{
 									rr.addProperty(ResourceFactory.createProperty(predicates.gost19__take),
 											ResourceFactory.createProperty(predicates.swrc__name));
 
-									if (organizationTags.length == 1)
-										rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
-												ResourceFactory.createProperty(predicates.swrc__Department));
-									else
+									if (organizationTag.indexOf(";") > 0)
 										rr.addProperty(ResourceFactory.createProperty(predicates.owl__someValuesFrom),
 												ResourceFactory.createProperty(predicates.swrc__Department));
+									else
+										rr.addProperty(ResourceFactory.createProperty(predicates.owl__allValuesFrom),
+												ResourceFactory.createProperty(predicates.swrc__Department));
+								}
+
+								String qq[] = organizationTag.split("\\|");
+								if (qq.length == 2)
+								{
+									String ou_ids[] = qq[1].split(",");
+
+									for (String ou_id : ou_ids)
+									{
+										String uri = ouId__ouUri.get(ou_id);
+										if (uri != null)
+											rr.addProperty(ResourceFactory.createProperty(predicates.owl__hasValue),
+													ResourceFactory.createProperty(uri));
+									}
 								}
 							}
 
@@ -658,10 +655,10 @@ public class Fetcher
 						}
 
 						// System.out.println("	att_name=[" + att_name + "]:" +
-						// typeLabel + " " + obligatory_label + " "
-						// + multi_select_label);
+						// typeLabel + " " + obligatory_label + " " +
+						// multi_select_label);
 						// System.out.println("	description=[" + descr + "]");
-						//
+
 					}
 
 					if (def_repr_code != null)
@@ -687,14 +684,16 @@ public class Fetcher
 
 		}
 		/*
-		 * System.out.println("\ncode entry stat"); for (int ii = 20; ii > 0;
-		 * ii--) { for (Entry<String, Integer> ee : code_stat.entrySet()) { if
-		 * (ee.getValue() == ii) System.out.println("[" + ee.getKey() + "]:" +
-		 * ee.getValue()); } }
-		 * 
-		 * System.out.println("\ncode -> onto"); for (Entry<String, String> ee :
-		 * old_code__new_code.entrySet()) { System.out.println("[" + ee.getKey()
-		 * + "]->[" + ee.getValue() + "]"); }
+		 * System.out.println("\ncode entry stat"); 
+		 * for (int ii = 20; ii > 0; ii--) 
+		 * { 
+		 * 	for (Entry<String, Integer> ee : code_stat.entrySet()) 
+		 * 	{ 
+		 * 		if (ee.getValue() == ii) System.out.println("[" + ee.getKey() + "]:" + ee.getValue()); } 
+		 * 	}
+		 *  System.out.println("\ncode -> onto"); 
+		 *  for (Entry<String, String> ee : old_code__new_code.entrySet()) 
+		 *  { System.out.println("[" + ee.getKey() + "]->[" + ee.getValue() + "]"); }
 		 */
 
 		System.out.print("templateUri_fieldUri__takedUri:\n" + templateUri_fieldUri__takedUri);
@@ -703,7 +702,7 @@ public class Fetcher
 	private static int count_documents_with_versions = 0;
 	private static int max_count_versons_of_document = 0;
 
-	private static IXMLParser parser = null;
+	// private static IXMLParser parser = null;
 
 	private static Map<String, String> prepared_docs = new HashMap<String, String>();
 
@@ -732,8 +731,7 @@ public class Fetcher
 		}
 	}
 
-	private static void prepare_document(String docId, PacahonClient pacahon_client, String ticket, int level)
-			throws Exception
+	private static void prepare_document(String docId, PacahonClient pacahon_client, String ticket, int level) throws Exception
 	{
 		String tab = "";
 
@@ -749,8 +747,8 @@ public class Fetcher
 		// if (parser == null)
 		// parser = XMLParserFactory.createDefaultXMLParser();
 
-		String docDataQuery = "select content, kindOf, timestamp, recordId, objectId FROM objects where objectId = '"
-				+ docId + "' order by timestamp desc";
+		String docDataQuery = "select content, kindOf, timestamp, recordId, objectId FROM objects where objectId = '" + docId
+				+ "' order by timestamp desc";
 		Statement st1 = connection.createStatement();
 		ResultSet docRecordRs = st1.executeQuery(docDataQuery);
 
@@ -842,7 +840,7 @@ public class Fetcher
 					date_created = util.string2date(dateCreatedStr);
 
 				String dateLastModified = getTextValue(de, "dateLastModified", null);
-				String lastEditorId = getTextValue(de, "lastEditorId", null);
+				// String lastEditorId = getTextValue(de, "lastEditorId", null);
 				String typeId = getTextValue(de, "typeId", null);
 
 				Model node = ModelFactory.createDefaultModel();
@@ -867,8 +865,7 @@ public class Fetcher
 
 					if (timestamp == null)
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.gost19__volatile),
-								node.createLiteral("true"));
+						r.addProperty(ResourceFactory.createProperty(predicates.gost19__volatile), node.createLiteral("true"));
 					}
 
 					try
@@ -878,8 +875,8 @@ public class Fetcher
 					} catch (Exception ex)
 					{
 						ex.printStackTrace(System.out);
-						System.out.println(tab + "^templateId=[" + templateId + "], typeId=[" + typeId
-								+ "], tmplRcId=[" + tmplRcId + "]");
+						System.out.println(tab + "^templateId=[" + templateId + "], typeId=[" + typeId + "], tmplRcId=["
+								+ tmplRcId + "]");
 					}
 
 					r.addProperty(ResourceFactory.createProperty(predicates.docs__document),
@@ -888,12 +885,23 @@ public class Fetcher
 					r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 							ResourceFactory.createProperty(predicates.docs__Document));
 
+					r.addProperty(ResourceFactory.createProperty(predicates.gost19__template), node.createLiteral(typeId));
+
+					LangString template_label = templateUri_label.get(templateId);
+
+					if (template_label.text_ru != null)
+						r.addProperty(ResourceFactory.createProperty(predicates.dc__title),
+								node.createLiteral(template_label.text_ru, "ru"));
+
+					if (template_label.text_en != null)
+						r.addProperty(ResourceFactory.createProperty(predicates.dc__title),
+								node.createLiteral(template_label.text_en, "en"));
+
 					r.addProperty(ResourceFactory.createProperty(predicates.dc__identifier), node.createLiteral(id));
 
 					if (dateCreatedStr != null)
 					{
-						r.addProperty(ResourceFactory.createProperty(predicates.dc__created),
-								node.createLiteral(dateCreatedStr));
+						r.addProperty(ResourceFactory.createProperty(predicates.dc__created), node.createLiteral(dateCreatedStr));
 					}
 
 					if (dateLastModified != null)
@@ -909,7 +917,8 @@ public class Fetcher
 							add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
 						} else
 						{
-							//							add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
+							// add_organization_ou_to_document(doc_id, authorId,
+							// predicates.dc__creator, node, r);
 						}
 					}
 
@@ -966,7 +975,7 @@ public class Fetcher
 								 * </xmlAttribute>
 								 */
 								String organizationValue = getTextValue(ee, "organizationValue", null);
-								String organizationTag = getTextValue(ee, "organizationTag", null);
+								//								String organizationTag = getTextValue(ee, "organizationTag", null);
 
 								if (organizationValue != null)
 								{
@@ -977,8 +986,7 @@ public class Fetcher
 								String textValue = getTextValue(ee, "textValue", null);
 								if (textValue != null && textValue.length() > 0)
 								{
-									r.addProperty(ResourceFactory.createProperty(onto_code),
-											node.createLiteral(textValue));
+									r.addProperty(ResourceFactory.createProperty(onto_code), node.createLiteral(textValue));
 								}
 							} else if (type.equals("LINK"))
 							{
@@ -986,8 +994,8 @@ public class Fetcher
 
 								if (value != null && value.length() > 0)
 								{
-									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
-											date_created, level);
+									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket, date_created,
+											level);
 								}
 
 							} else if (type.equals("DICTIONARY"))
@@ -996,8 +1004,8 @@ public class Fetcher
 
 								if (value != null && value.length() > 0)
 								{
-									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket,
-											date_created, level);
+									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket, date_created,
+											level);
 								}
 
 							} else if (type.equals("DATEINTERVAL"))
@@ -1168,8 +1176,7 @@ public class Fetcher
 		{
 			try
 			{
-				r1.addProperty(ResourceFactory.createProperty(filed),
-						ResourceFactory.createProperty(predicates.query__get));
+				r1.addProperty(ResourceFactory.createProperty(filed), ResourceFactory.createProperty(predicates.query__get));
 			} catch (Exception ex)
 			{
 				ex.hashCode();
@@ -1195,8 +1202,7 @@ public class Fetcher
 
 		} else
 		{
-			System.out.println("not found data for property " + docUri + ":" + attUri + ", in document [" + linkDocUri
-					+ "]");
+			System.out.println("not found data for property " + docUri + ":" + attUri + ", in document [" + linkDocUri + "]");
 
 			System.out.println("default representation");
 			for (String ee : def_repr)
@@ -1207,8 +1213,8 @@ public class Fetcher
 
 	}
 
-	private static void add_organization_ou_to_document(String docUri, String ouId, String attUri, Model node,
-			Resource r) throws Exception
+	private static void add_organization_ou_to_document(String docUri, String ouId, String attUri, Model node, Resource r)
+			throws Exception
 	{
 		if (ouId == null || ouId.length() < 2)
 			return;
@@ -1247,20 +1253,20 @@ public class Fetcher
 			write_add_info_of_attribute(docUri, attUri, ouUri, ResourceFactory.createProperty(predicates.docs__source),
 					ResourceFactory.createProperty(ouDocUri), node);
 
-			if (ouObj instanceof ru.magnetosoft.objects.organization.User)
+			if (ouObj instanceof ru.mndsc.objects.organization.User)
 			{
 				User user = (User) ouObj;
 
 				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, user.getName(), node);
 
-			} else if (ouObj instanceof ru.magnetosoft.objects.organization.Department)
+			} else if (ouObj instanceof ru.mndsc.objects.organization.Department)
 			{
 				Department dep = (Department) ouObj;
 
 				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, dep.getName(), node);
-			} else if (ouObj instanceof ru.magnetosoft.objects.organization.OrganizationUnit)
+			} else if (ouObj instanceof ru.mndsc.objects.organization.OrganizationUnit)
 			{
-				ru.magnetosoft.objects.organization.OrganizationUnit ou = (ru.magnetosoft.objects.organization.OrganizationUnit) ouObj;
+				ru.mndsc.objects.organization.OrganizationUnit ou = (ru.mndsc.objects.organization.OrganizationUnit) ouObj;
 
 				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, ou.getName(), node);
 			} else if (ouObj instanceof EntityType)
@@ -1282,8 +1288,7 @@ public class Fetcher
 							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__lastName, value, node);
 						} else if (name.equalsIgnoreCase("secondnameRu"))
 						{
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.gost19__middleName, value,
-									node);
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.gost19__middleName, value, node);
 						} else if (name.equalsIgnoreCase("postRu"))
 						{
 							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.docs__position, value, node);
@@ -1291,8 +1296,8 @@ public class Fetcher
 						{
 							String id = extId__id.get(value);
 							Department department = departments__id.get(id);
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name,
-									department.getName("ru"), node);
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, department.getName("ru"),
+									node);
 
 						}
 					}
@@ -1313,20 +1318,19 @@ public class Fetcher
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 				ResourceFactory.createProperty(predicates.rdf, "Statement"));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__subject),
-				ResourceFactory.createProperty(subject));
+		r_department
+				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__predicate),
 				ResourceFactory.createProperty(predicate));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object),
-				ResourceFactory.createProperty(object));
+		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object), ResourceFactory.createProperty(object));
 
 		r_department.addProperty(ResourceFactory.createProperty(addInfo_predicate), node.createLiteral(addInfo_value));
 	}
 
-	static void write_add_info_of_attribute(String subject, String predicate, String object,
-			Property addInfo_predicate, Literal addInfo_value, Model node) throws Exception
+	static void write_add_info_of_attribute(String subject, String predicate, String object, Property addInfo_predicate,
+			Literal addInfo_value, Model node) throws Exception
 	{
 		String addinfo_subject = predicates.gost19 + "add_info_" + subject.hashCode() + "" + predicate.hashCode() + ""
 				+ object.hashCode();
@@ -1336,20 +1340,19 @@ public class Fetcher
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 				ResourceFactory.createProperty(predicates.rdf, "Statement"));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__subject),
-				ResourceFactory.createProperty(subject));
+		r_department
+				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__predicate),
 				ResourceFactory.createProperty(predicate));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object),
-				ResourceFactory.createProperty(object));
+		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object), ResourceFactory.createProperty(object));
 
 		r_department.addProperty(addInfo_predicate, addInfo_value);
 	}
 
-	static void write_add_info_of_attribute(String subject, String predicate, String object,
-			Property addInfo_predicate, Property addInfo_value, Model node) throws Exception
+	static void write_add_info_of_attribute(String subject, String predicate, String object, Property addInfo_predicate,
+			Property addInfo_value, Model node) throws Exception
 	{
 		String addinfo_subject = predicates.gost19 + "add_info_" + subject.hashCode() + "" + predicate.hashCode() + ""
 				+ object.hashCode();
@@ -1359,14 +1362,13 @@ public class Fetcher
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
 				ResourceFactory.createProperty(predicates.rdf, "Statement"));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__subject),
-				ResourceFactory.createProperty(subject));
+		r_department
+				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__predicate),
 				ResourceFactory.createProperty(predicate));
 
-		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object),
-				ResourceFactory.createProperty(object));
+		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__object), ResourceFactory.createProperty(object));
 
 		r_department.addProperty(addInfo_predicate, addInfo_value);
 	}
@@ -1382,8 +1384,8 @@ public class Fetcher
 		if (this_code_in_onto == null)
 		{
 			if ((code.indexOf('1') >= 0 || code.indexOf('2') >= 0 || code.indexOf('3') >= 0 || code.indexOf('4') >= 0
-					|| code.indexOf('5') >= 0 || code.indexOf('6') >= 0 || code.indexOf('7') >= 0
-					|| code.indexOf('8') >= 0 || code.indexOf('9') >= 0 || code.indexOf('0') >= 0)
+					|| code.indexOf('5') >= 0 || code.indexOf('6') >= 0 || code.indexOf('7') >= 0 || code.indexOf('8') >= 0
+					|| code.indexOf('9') >= 0 || code.indexOf('0') >= 0)
 					&& alternativeName != null)
 			{
 				// если code содержит uid, то заменим code на
@@ -1410,9 +1412,9 @@ public class Fetcher
 				code = alternativeName;
 
 			this_code_in_onto = predicates.user_onto
-					+ Translit.toTranslit(code).replace('/', '_').replace(' ', '_').replace('\'', '_')
-							.replace('№', 'N').replace(',', '_').replace('(', '_').replace(')', '_').replace('.', '_')
-							.replace('-', '_').replace('%', 'P').toLowerCase();
+					+ Translit.toTranslit(code).replace('/', '_').replace(' ', '_').replace('\'', '_').replace('№', 'N')
+							.replace(',', '_').replace('(', '_').replace(')', '_').replace('.', '_').replace('-', '_')
+							.replace('%', 'P').toLowerCase();
 
 		}
 
@@ -1475,7 +1477,7 @@ public class Fetcher
 		properties.setProperty("fake", "false");
 		properties.setProperty("pathToDump", "data");
 		properties.setProperty("organizationName", "OrganizationEntityService");
-		properties.setProperty("organizationNameSpace", "http://organization.magnet.magnetosoft.ru/");
+		properties.setProperty("organizationNameSpace", "http://organization.zdms_component.mndsc.ru/");
 		properties.setProperty("organizationUrl", "http://localhost:9874/organization/OrganizationEntitySvc?wsdl");
 		properties.setProperty("dbUser", "ba");
 		properties.setProperty("dbPassword", "123456");
@@ -1494,8 +1496,8 @@ public class Fetcher
 	{
 		System.out
 				.println("Usage  : java -cp ba2pacahon.jar org.gost19.ba2pacahon.Fetcher [ fetchType(directive|organization) [ docType [ pathToDump [ ticketId [ searchServicesWsdl [ searchQname [ docUrl [ fake(if exists => true) ] ] ] ] ] ]");
-		System.out.println("Example: java -cp ba2pacahon.jar org.gost19.ba2pacahon.Fetcher " + documentTypeId + " "
-				+ pathToDump + " " + ticketId + " ");
+		System.out.println("Example: java -cp ba2pacahon.jar org.gost19.ba2pacahon.Fetcher " + documentTypeId + " " + pathToDump
+				+ " " + ticketId + " ");
 	}
 
 	public static void main(String[] args) throws Exception
@@ -1563,8 +1565,7 @@ public class Fetcher
 			{
 				String endpoint_pretending_organization = properties.getProperty("organizationPoint");
 				org_driver = new BaOrganizationDriver(endpoint_pretending_organization);
-				List<Department> list_deps = org_driver
-						.getAllDepartments(false, "org.gost19.ba2pacahon.Fetcher:main()");
+				List<Department> list_deps = org_driver.getAllDepartments(false, "org.gost19.ba2pacahon.Fetcher:main()");
 				departments__id = new HashMap<String, Department>();
 
 				for (Department dep : list_deps)
@@ -1573,48 +1574,60 @@ public class Fetcher
 
 					departments__id.put(dep.getId(), dep);
 
+					String uri = null;
+
 					if (dep.type == dep._ORGANIZATION)
-						ouUri__userObj.put(predicates.zdb + "org_" + dep.getId(), dep);
-					if (dep.type == dep._GROUP)
-						ouUri__userObj.put(predicates.zdb + "group_" + dep.getId(), dep);
-					if (dep.type == dep._DEPARTMENT)
-						ouUri__userObj.put(predicates.zdb + "dep_" + dep.getId(), dep);
+						uri = predicates.zdb + "org_" + dep.getId();
+					else if (dep.type == dep._GROUP)
+						uri = predicates.zdb + "group_" + dep.getId();
+					else if (dep.type == dep._DEPARTMENT)
+						uri = predicates.zdb + "dep_" + dep.getId();
+
+					ouUri__userObj.put(uri, dep);
+					ouId__ouUri.put(dep.getId(), uri);
 
 					List<User> users = org_driver.getUsersByDepartmentId(dep.getExtId(), "ru", true, false,
 							"ba2pacahon.Fetcher.main");
 
 					for (User uu : users)
 					{
-						ouUri__userObj.put(predicates.zdb + "person_" + uu.getId(), uu);
+						uri = predicates.zdb + "person_" + uu.getId();
+						ouUri__userObj.put(uri, uu);
+						ouId__ouUri.put(uu.getId(), uri);
 					}
 
 				}
 
-			} else if (properties.getProperty("organizationUrl") != null)
-			{
-				old_organization_utils = new OldOrganizationUtil(properties.getProperty("organizationUrl"),
-						properties.getProperty("organizationNameSpace"), properties.getProperty("organizationName"));
-
-				OldOrganizationUtil.fetchOrganization(pacahon_client, ticket);
 			}
+			// else if (properties.getProperty("organizationUrl") != null)
+			// {
+			// old_organization_utils = new
+			// OldOrganizationUtil(properties.getProperty("organizationUrl"),
+			// properties.getProperty("organizationNameSpace"),
+			// properties.getProperty("organizationName"));
+			//
+			// OldOrganizationUtil.fetchOrganization(pacahon_client, ticket);
+			// }
 
-			init_source();
-			fetchDocumentTypes(pacahon_client, ticket);
-
-			Iterator<Entry<String, String>> it = old_code__new_code.entrySet().iterator();
-			while (it.hasNext())
+			if (properties.getProperty("documentsUrl") != null)
 			{
-				Entry<String, String> e = it.next();
-				System.out.println(e.getKey() + " => " + e.getValue());
+				init_source();
+				fetchDocumentTypes(pacahon_client, ticket);
+
+				Iterator<Entry<String, String>> it = old_code__new_code.entrySet().iterator();
+				while (it.hasNext())
+				{
+					Entry<String, String> e = it.next();
+					System.out.println(e.getKey() + " => " + e.getValue());
+				}
+
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				db = dbf.newDocumentBuilder();
+
+				fetchDocuments(pacahon_client, ticket);
 			}
-
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			db = dbf.newDocumentBuilder();
-
-			fetchDocuments(pacahon_client, ticket);
-
-			//		System.out.println("end... sleep...");
-			//		Thread.currentThread().sleep(999999999);
+			// System.out.println("end... sleep...");
+			// Thread.currentThread().sleep(999999999);
 		} catch (Exception ex)
 		{
 			System.out.println("Error !");

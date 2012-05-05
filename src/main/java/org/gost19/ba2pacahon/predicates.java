@@ -122,6 +122,7 @@ public class predicates
 	public static final String gost19__work_phone = gost19 + "work_phone";
 	public static final String gost19__work_mobile = gost19 + "work_mobile";
 	public static final String gost19__mobile = gost19 + "mobile";
+	public static final String gost19__template = gost19 + "template";
 	
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";

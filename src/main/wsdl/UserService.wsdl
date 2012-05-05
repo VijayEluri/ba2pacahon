@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<definitions targetNamespace="http://organization.bigarchive.magnetosoft.ru/" name="UserService" xmlns:tns="http://organization.bigarchive.magnetosoft.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+<definitions targetNamespace="http://organization.bigarchive.mndsc.ru/" name="UserService" xmlns:tns="http://organization.bigarchive.mndsc.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema>
-      <xsd:import namespace="http://organization.bigarchive.magnetosoft.ru/" schemaLocation="UserService_schema1.xsd"/>
+      <xsd:import namespace="http://organization.bigarchive.mndsc.ru/" schemaLocation="UserService_schema1.xsd"/>
     </xsd:schema>
   </types>
   <message name="getVersion">

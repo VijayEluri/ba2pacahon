@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<definitions targetNamespace="http://logging.bigarchive.magnetosoft.ru/" name="LoggingService" xmlns:tns="http://logging.bigarchive.magnetosoft.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+<definitions targetNamespace="http://logging.bigarchive.mndsc.ru/" name="LoggingService" xmlns:tns="http://logging.bigarchive.mndsc.ru/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema>
-      <xsd:import namespace="http://logging.bigarchive.magnetosoft.ru/" schemaLocation="LoggingService_schema1.xsd"/>
+      <xsd:import namespace="http://logging.bigarchive.mndsc.ru/" schemaLocation="LoggingService_schema1.xsd"/>
     </xsd:schema>
   </types>
   <message name="setLoggingConfiguration">

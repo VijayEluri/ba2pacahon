@@ -24,20 +24,19 @@
         <dependency>
             <groupId>org.gost19.pacahon.client</groupId>
             <artifactId>pacahon-client</artifactId>
-            <version>0.3-SNAPSHOT</version>
+            <version>0.6-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.gost19.pacahon.client</groupId>
             <artifactId>ba-pacahon-driver</artifactId>
-            <version>0.8-SNAPSHOT</version>
+            <version>0.14-SNAPSHOT</version>
         </dependency>
-
+        
         <dependency>
-                <groupId>ru.magnetosoft.bigarchive.client.web</groupId>
+                <groupId>ru.mndsc.bigarchive.client.web</groupId>
                 <artifactId>bacw-import</artifactId>
-                <version>0.14.75-SNAPSHOT</version>
-<!--                <scope>provided</scope> -->
+                <version>0.16.22-SNAPSHOT</version>
         </dependency>
 
 
@@ -131,38 +130,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <tasks>
-                                <path id="jwdp.classpath">
-                                <path refid="maven.compile.classpath" />
-                                    <pathelement location="${java.home}/../lib/tools.jar" />
-                                </path>
-                                <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                                    <classpath refid="jwdp.classpath" />
-                                </taskdef>
-                                <echo message="Generate DocumentService WS artifacts..." />
-                                <mkdir dir="${project.build.outputDirectory}" />
-                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/DocumentService.wsdl" package="magnetico.ws.document" />
-                                <echo message="Generate SearchService WS artifacts..." />
-                                <mkdir dir="${project.build.outputDirectory}" />
-                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/SearchService.wsdl" package="magnetico.ws.search" />
-                                <echo message="Generate AttachmentService WS artifacts..." />
-                                <mkdir dir="${project.build.outputDirectory}" />
-                                <wsimport debug="true" verbose="false" keep="true" sourcedestdir="${project.build.sourceDirectory}" destdir="${project.build.outputDirectory}" wsdl="${basedir}/src/main/wsdl/AttachmentService.wsdl" package="magnetico.ws.attachment" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
 		</plugins>
 	</build>

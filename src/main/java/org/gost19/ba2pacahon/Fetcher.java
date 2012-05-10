@@ -453,7 +453,7 @@ public class Fetcher
 
 								if (dictionaryIdValue != null)
 								{
-									// тип спраочника
+									// тип справoчника
 									obj_owl__allValuesFrom = predicates.user_onto + "tmplDict_" + dictionaryIdValue + "_v_1";
 
 									String dictionaryNameValue = util.get(att_list_element, "dictionaryNameValue", null);
@@ -504,7 +504,7 @@ public class Fetcher
 										{
 											String data = tmpa[1];
 
-											obj_owl__allValuesFrom = predicates.user_onto + "template_" + id + "_v_1";
+											obj_owl__allValuesFrom = predicates.user_onto + "template_" + data + "_v_1";
 										}
 									}
 									if (compz.indexOf("$composition") >= 0)
@@ -912,14 +912,14 @@ public class Fetcher
 
 					if (authorId != null)
 					{
-						if (destinationPoint == null)
-						{
+//						if (destinationPoint == null)
+//						{
 							add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
-						} else
-						{
+//						} else
+//						{
 							// add_organization_ou_to_document(doc_id, authorId,
 							// predicates.dc__creator, node, r);
-						}
+//						}
 					}
 
 					NodeList atts = dom.getElementsByTagName("xmlAttribute");

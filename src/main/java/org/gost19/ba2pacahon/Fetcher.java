@@ -912,14 +912,14 @@ public class Fetcher
 
 					if (authorId != null)
 					{
-//						if (destinationPoint == null)
-//						{
-							add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
-//						} else
-//						{
-							// add_organization_ou_to_document(doc_id, authorId,
-							// predicates.dc__creator, node, r);
-//						}
+						//						if (destinationPoint == null)
+						//						{
+						add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
+						//						} else
+						//						{
+						// add_organization_ou_to_document(doc_id, authorId,
+						// predicates.dc__creator, node, r);
+						//						}
 					}
 
 					NodeList atts = dom.getElementsByTagName("xmlAttribute");
@@ -956,26 +956,22 @@ public class Fetcher
 							{
 								/*
 								 * <xmlAttribute>
-								 * <dateCreated>2010-02-02T09:40:08.862
-								 * +03:00</dateCreated>
-								 * <description></description>
-								 * <multiSelect>true</multiSelect>
-								 * <name>Кому</name>
-								 * <obligatory>true</obligatory>
-								 * <organizationTag>user</organizationTag>
-								 * <organizationValue
-								 * >fb926d69-3a49-4842-a2e2-e592fd301073
-								 * </organizationValue>
-								 * <type>ORGANIZATION</type>
-								 * <computationalConfirm
-								 * >NONE</computationalConfirm>
-								 * <computationalReadonly
-								 * >false</computationalReadonly>
-								 * <code>Кому</code> <xmlAttributes/>
+								 *   <dateCreated>2010-02-02T09:40:08.862+03:00</dateCreated>
+								 *   <description></description>
+								 *   <multiSelect>true</multiSelect>
+								 *   <name>Кому</name>
+								 *   <obligatory>true</obligatory>
+								 *   <organizationTag>user</organizationTag>
+								 *   <organizationValue>fb926d69-3a49-4842-a2e2-e592fd301073</organizationValue>
+								 *   <type>ORGANIZATION</type>
+								 *   <computationalConfirm>NONE</computationalConfirm>
+								 *   <computationalReadonly>false</computationalReadonly>
+								 *   <code>Кому</code> 
+								 *   <xmlAttributes/>
 								 * </xmlAttribute>
 								 */
 								String organizationValue = getTextValue(ee, "organizationValue", null);
-								//								String organizationTag = getTextValue(ee, "organizationTag", null);
+								//		String organizationTag = getTextValue(ee, "organizationTag", null);
 
 								if (organizationValue != null)
 								{
@@ -1048,8 +1044,8 @@ public class Fetcher
 								}
 							} else if (type.equals("FILE"))
 							{
-								// fileValue
-								type.hashCode();
+								String value = getTextValue(ee, "numberValue", null);
+								add_attachment_to_document(doc_id, value, onto_code, node, r);
 							} else if (type.equals("BOOLEAN"))
 							{
 								// flagValue
@@ -1144,9 +1140,7 @@ public class Fetcher
 
 		r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(linkDocUri));
 
-		// возможно у этого поля есть собственные представления для линка на
-		// документ
-		// возьмем сначала его
+		// возможно у этого поля есть собственные представления для линка на документ возьмем сначала его
 		String templateId = docUri__templateUri.get(docUri);
 		String[] def_repr = templateUri_fieldUri__takedUri.get(templateId + "+" + attUri);
 
@@ -1258,12 +1252,11 @@ public class Fetcher
 				User user = (User) ouObj;
 
 				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, user.getName(), node);
-
 			} else if (ouObj instanceof ru.mndsc.objects.organization.Department)
 			{
 				Department dep = (Department) ouObj;
 
-				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, dep.getName(), node);
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, dep.getName(), node);
 			} else if (ouObj instanceof ru.mndsc.objects.organization.OrganizationUnit)
 			{
 				ru.mndsc.objects.organization.OrganizationUnit ou = (ru.mndsc.objects.organization.OrganizationUnit) ouObj;
@@ -1306,6 +1299,101 @@ public class Fetcher
 		}
 
 	}
+
+	private static void add_attachment_to_document(String docUri, String attachmentId, String attUri, Model node, Resource r)
+			throws Exception
+	{
+		// создать карточку - описание документа? или просто реифицировать ?
+		
+		
+		String ouUri = predicates.zdb + "file_" + ouId;
+		Object ouObj = ouUri__userObj.get(ouUri);
+
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "dep_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "org_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "group_" + ouId;
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+		{
+			ouUri = predicates.zdb + "person_34fb5949-7d28-4cf5-91d0-93b5d773ce17";
+			ouObj = ouUri__userObj.get(ouUri);
+		}
+		if (ouObj == null)
+			throw new Exception("user [" + ouId + "] not found");
+
+		if (ouObj != null)
+		{
+			String ouDocUri = predicates.zdb + "doc_" + ouId;
+			r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(ouUri));
+
+			write_add_info_of_attribute(docUri, attUri, ouUri, ResourceFactory.createProperty(predicates.docs__source),
+					ResourceFactory.createProperty(ouDocUri), node);
+
+			if (ouObj instanceof ru.mndsc.objects.organization.User)
+			{
+				User user = (User) ouObj;
+
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, user.getName(), node);
+			} else if (ouObj instanceof ru.mndsc.objects.organization.Department)
+			{
+				Department dep = (Department) ouObj;
+
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, dep.getName(), node);
+			} else if (ouObj instanceof ru.mndsc.objects.organization.OrganizationUnit)
+			{
+				ru.mndsc.objects.organization.OrganizationUnit ou = (ru.mndsc.objects.organization.OrganizationUnit) ouObj;
+
+				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, ou.getName(), node);
+			} else if (ouObj instanceof EntityType)
+			{
+				EntityType person = (EntityType) ouObj;
+
+				for (AttributeType a : person.getAttributes().getAttributeList())
+				{
+					String name = a.getName();
+					String value = a.getValue();
+					if (value != null && value.length() > 0)
+					{
+						if (name.equalsIgnoreCase("firstNameRu"))
+						{
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, value, node);
+
+						} else if (name.equalsIgnoreCase("surnameRu"))
+						{
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__lastName, value, node);
+						} else if (name.equalsIgnoreCase("secondnameRu"))
+						{
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.gost19__middleName, value, node);
+						} else if (name.equalsIgnoreCase("postRu"))
+						{
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.docs__position, value, node);
+						} else if (name.equalsIgnoreCase("departmentId"))
+						{
+							String id = extId__id.get(value);
+							Department department = departments__id.get(id);
+							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, department.getName("ru"),
+									node);
+
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static void write_add_info_of_attribute(String subject, String predicate, String object, String addInfo_predicate,
 			String addInfo_value, Model node) throws Exception

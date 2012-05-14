@@ -846,10 +846,10 @@ public class Fetcher
 				Model node = ModelFactory.createDefaultModel();
 				node.setNsPrefixes(predicates.getPrefixs());
 
-				Resource r = null;
-
 				String tmplRcId[] = util.getRecordIdAndTemplateIdOfDocId__OnDate(typeId, date_created, connection);
 				String templateId = recordId__versionId.get(tmplRcId[0]);
+
+				Resource r = null;
 
 				if (templateId == null)
 				{
@@ -1044,8 +1044,19 @@ public class Fetcher
 								}
 							} else if (type.equals("FILE"))
 							{
-								String value = getTextValue(ee, "numberValue", null);
-								add_attachment_to_document(doc_id, value, onto_code, node, r);
+								String file_name = null;
+								String value = getTextValue(ee, "fileValue", null);
+								String description = getTextValue(ee, "description", null);
+								if (description != null)
+								{
+									String[] desc_elements = description.split("--");
+									if (desc_elements.length == 2)
+									{
+										file_name = desc_elements[1];
+									}
+								}
+
+								add_attachment_to_document(doc_id, value, onto_code, file_name, node, r);
 							} else if (type.equals("BOOLEAN"))
 							{
 								// flagValue
@@ -1106,7 +1117,7 @@ public class Fetcher
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static void addLinkToDocument(String docUri, String linkDocId, String attUri, Model node, Resource r,
+	private static void addLinkToDocument(String docUri, String linkDocId, String attUri, Model node, Resource r_doc,
 			PacahonClient pacahon_client, String ticket, Date date_created, int level) throws Exception
 	{
 		if (linkDocId == null || linkDocId.length() < 2)
@@ -1138,7 +1149,7 @@ public class Fetcher
 
 		System.out.println("		linked doc:" + linkDocId);
 
-		r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(linkDocUri));
+		r_doc.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(linkDocUri));
 
 		// возможно у этого поля есть собственные представления для линка на документ возьмем сначала его
 		String templateId = docUri__templateUri.get(docUri);
@@ -1207,7 +1218,7 @@ public class Fetcher
 
 	}
 
-	private static void add_organization_ou_to_document(String docUri, String ouId, String attUri, Model node, Resource r)
+	private static void add_organization_ou_to_document(String docUri, String ouId, String attUri, Model node, Resource r_doc)
 			throws Exception
 	{
 		if (ouId == null || ouId.length() < 2)
@@ -1242,7 +1253,7 @@ public class Fetcher
 		if (ouObj != null)
 		{
 			String ouDocUri = predicates.zdb + "doc_" + ouId;
-			r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(ouUri));
+			r_doc.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(ouUri));
 
 			write_add_info_of_attribute(docUri, attUri, ouUri, ResourceFactory.createProperty(predicates.docs__source),
 					ResourceFactory.createProperty(ouDocUri), node);
@@ -1300,97 +1311,24 @@ public class Fetcher
 
 	}
 
-	private static void add_attachment_to_document(String docUri, String attachmentId, String attUri, Model node, Resource r)
-			throws Exception
+	private static void add_attachment_to_document(String docUri, String attachmentId, String attUri, String file_name,
+			Model node, Resource r_doc) throws Exception
 	{
-		// создать карточку - описание документа? или просто реифицировать ?
-		
-		
-		String ouUri = predicates.zdb + "file_" + ouId;
-		Object ouObj = ouUri__userObj.get(ouUri);
+		// создать карточку - описание документа
+		Resource r_file = null;
 
-		if (ouObj == null)
-		{
-			ouUri = predicates.zdb + "dep_" + ouId;
-			ouObj = ouUri__userObj.get(ouUri);
-		}
-		if (ouObj == null)
-		{
-			ouUri = predicates.zdb + "org_" + ouId;
-			ouObj = ouUri__userObj.get(ouUri);
-		}
-		if (ouObj == null)
-		{
-			ouUri = predicates.zdb + "group_" + ouId;
-			ouObj = ouUri__userObj.get(ouUri);
-		}
-		if (ouObj == null)
-		{
-			ouUri = predicates.zdb + "person_34fb5949-7d28-4cf5-91d0-93b5d773ce17";
-			ouObj = ouUri__userObj.get(ouUri);
-		}
-		if (ouObj == null)
-			throw new Exception("user [" + ouId + "] not found");
+		String file_id = predicates.zdb + "file_" + attachmentId;
 
-		if (ouObj != null)
-		{
-			String ouDocUri = predicates.zdb + "doc_" + ouId;
-			r.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(ouUri));
+		r_file = node.createResource(file_id);
 
-			write_add_info_of_attribute(docUri, attUri, ouUri, ResourceFactory.createProperty(predicates.docs__source),
-					ResourceFactory.createProperty(ouDocUri), node);
+		r_file.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
+				ResourceFactory.createProperty(predicates.docs__FileDescription));
 
-			if (ouObj instanceof ru.mndsc.objects.organization.User)
-			{
-				User user = (User) ouObj;
+		if (file_name != null)
+			r_file.addProperty(ResourceFactory.createProperty(predicates.docs__file), node.createLiteral(file_name));
 
-				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, user.getName(), node);
-			} else if (ouObj instanceof ru.mndsc.objects.organization.Department)
-			{
-				Department dep = (Department) ouObj;
-
-				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, dep.getName(), node);
-			} else if (ouObj instanceof ru.mndsc.objects.organization.OrganizationUnit)
-			{
-				ru.mndsc.objects.organization.OrganizationUnit ou = (ru.mndsc.objects.organization.OrganizationUnit) ouObj;
-
-				write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, ou.getName(), node);
-			} else if (ouObj instanceof EntityType)
-			{
-				EntityType person = (EntityType) ouObj;
-
-				for (AttributeType a : person.getAttributes().getAttributeList())
-				{
-					String name = a.getName();
-					String value = a.getValue();
-					if (value != null && value.length() > 0)
-					{
-						if (name.equalsIgnoreCase("firstNameRu"))
-						{
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__firstName, value, node);
-
-						} else if (name.equalsIgnoreCase("surnameRu"))
-						{
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__lastName, value, node);
-						} else if (name.equalsIgnoreCase("secondnameRu"))
-						{
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.gost19__middleName, value, node);
-						} else if (name.equalsIgnoreCase("postRu"))
-						{
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.docs__position, value, node);
-						} else if (name.equalsIgnoreCase("departmentId"))
-						{
-							String id = extId__id.get(value);
-							Department department = departments__id.get(id);
-							write_add_info_of_attribute(docUri, attUri, ouUri, predicates.swrc__name, department.getName("ru"),
-									node);
-
-						}
-					}
-				}
-			}
-		}
-
+		// добавить карточку файла в документ
+		r_doc.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(file_id));
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1404,7 +1342,7 @@ public class Fetcher
 		Resource r_department = node.createResource(addinfo_subject);
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-				ResourceFactory.createProperty(predicates.rdf, "Statement"));
+				ResourceFactory.createProperty(predicates.rdf__Statement));
 
 		r_department
 				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));
@@ -1426,7 +1364,7 @@ public class Fetcher
 		Resource r_department = node.createResource(addinfo_subject);
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-				ResourceFactory.createProperty(predicates.rdf, "Statement"));
+				ResourceFactory.createProperty(predicates.rdf__Statement));
 
 		r_department
 				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));
@@ -1448,7 +1386,7 @@ public class Fetcher
 		Resource r_department = node.createResource(addinfo_subject);
 
 		r_department.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-				ResourceFactory.createProperty(predicates.rdf, "Statement"));
+				ResourceFactory.createProperty(predicates.rdf__Statement));
 
 		r_department
 				.addProperty(ResourceFactory.createProperty(predicates.rdf__subject), ResourceFactory.createProperty(subject));

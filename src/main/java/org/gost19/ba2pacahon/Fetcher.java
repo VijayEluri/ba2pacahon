@@ -93,12 +93,18 @@ public class Fetcher
 		// versionId__recordId = new HashMap<String, String>();
 		// recordId__versionId = new HashMap<String, String>();
 
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.dc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.f_swrc, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.gost19, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.docs, false);
-		// writeTriplet(predicates.f_user_onto, predicates.owl__imports, predicates.user_onto, false);
-		// writeTriplet(predicates.f_user_onto, predicates.rdf__type, predicates.owl__Ontology, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.dc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.f_swrc, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.gost19, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.docs, false);
+		// writeTriplet(predicates.f_user_onto, predicates.owl__imports,
+		// predicates.user_onto, false);
+		// writeTriplet(predicates.f_user_onto, predicates.rdf__type,
+		// predicates.owl__Ontology, false);
 
 		ResultSet templatesRs = connection.createStatement().executeQuery(
 				"select objectId FROM objects where isTemplate = 1 and timestamp is null");
@@ -847,16 +853,16 @@ public class Fetcher
 				node.setNsPrefixes(predicates.getPrefixs());
 
 				String tmplRcId[] = util.getRecordIdAndTemplateIdOfDocId__OnDate(typeId, date_created, connection);
-				String templateId = recordId__versionId.get(tmplRcId[0]);
+				String templateUri = recordId__versionId.get(tmplRcId[0]);
 
 				Resource r = null;
 
-				if (templateId == null)
+				if (templateUri == null)
 				{
 					System.out.println(tab + "for doc:[" + id + "] typeId:[" + typeId + "] not exist template");
 				} else
 				{
-					docUri__templateUri.put(doc_id, templateId);
+					docUri__templateUri.put(doc_id, templateUri);
 
 					r = node.createResource(doc_id);
 
@@ -871,11 +877,11 @@ public class Fetcher
 					try
 					{
 						r.addProperty(ResourceFactory.createProperty(predicates.rdf__type),
-								ResourceFactory.createProperty(templateId));
+								ResourceFactory.createProperty(templateUri));
 					} catch (Exception ex)
 					{
 						ex.printStackTrace(System.out);
-						System.out.println(tab + "^templateId=[" + templateId + "], typeId=[" + typeId + "], tmplRcId=["
+						System.out.println(tab + "^templateId=[" + templateUri + "], typeId=[" + typeId + "], tmplRcId=["
 								+ tmplRcId + "]");
 					}
 
@@ -887,7 +893,7 @@ public class Fetcher
 
 					r.addProperty(ResourceFactory.createProperty(predicates.gost19__template), node.createLiteral(typeId));
 
-					LangString template_label = templateUri_label.get(templateId);
+					LangString template_label = templateUri_label.get(templateUri);
 
 					if (template_label.text_ru != null)
 						r.addProperty(ResourceFactory.createProperty(predicates.dc__title),
@@ -912,14 +918,14 @@ public class Fetcher
 
 					if (authorId != null)
 					{
-						//						if (destinationPoint == null)
-						//						{
+						// if (destinationPoint == null)
+						// {
 						add_organization_ou_to_document(doc_id, authorId, predicates.dc__creator, node, r);
-						//						} else
-						//						{
+						// } else
+						// {
 						// add_organization_ou_to_document(doc_id, authorId,
 						// predicates.dc__creator, node, r);
-						//						}
+						// }
 					}
 
 					NodeList atts = dom.getElementsByTagName("xmlAttribute");
@@ -971,7 +977,8 @@ public class Fetcher
 								 * </xmlAttribute>
 								 */
 								String organizationValue = getTextValue(ee, "organizationValue", null);
-								//		String organizationTag = getTextValue(ee, "organizationTag", null);
+								// String organizationTag = getTextValue(ee,
+								// "organizationTag", null);
 
 								if (organizationValue != null)
 								{
@@ -990,8 +997,8 @@ public class Fetcher
 
 								if (value != null && value.length() > 0)
 								{
-									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket, date_created,
-											level);
+									addLinkToDocument(doc_id, templateUri, value, onto_code, node, r, pacahon_client, ticket,
+											date_created, level);
 								}
 
 							} else if (type.equals("DICTIONARY"))
@@ -1000,8 +1007,8 @@ public class Fetcher
 
 								if (value != null && value.length() > 0)
 								{
-									addLinkToDocument(doc_id, value, onto_code, node, r, pacahon_client, ticket, date_created,
-											level);
+									addLinkToDocument(doc_id, templateUri, value, onto_code, node, r, pacahon_client, ticket,
+											date_created, level);
 								}
 
 							} else if (type.equals("DATEINTERVAL"))
@@ -1117,8 +1124,8 @@ public class Fetcher
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static void addLinkToDocument(String docUri, String linkDocId, String attUri, Model node, Resource r_doc,
-			PacahonClient pacahon_client, String ticket, Date date_created, int level) throws Exception
+	private static void addLinkToDocument(String docUri, String templateUri, String linkDocId, String attUri, Model node,
+			Resource r_doc, PacahonClient pacahon_client, String ticket, Date date_created, int level) throws Exception
 	{
 		if (linkDocId == null || linkDocId.length() < 2)
 			return;
@@ -1151,7 +1158,8 @@ public class Fetcher
 
 		r_doc.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(linkDocUri));
 
-		// возможно у этого поля есть собственные представления для линка на документ возьмем сначала его
+		// возможно у этого поля есть собственные представления для линка на
+		// документ возьмем сначала его
 		String templateId = docUri__templateUri.get(docUri);
 		String[] def_repr = templateUri_fieldUri__takedUri.get(templateId + "+" + attUri);
 
@@ -1199,11 +1207,13 @@ public class Fetcher
 			while (it.hasNext())
 			{
 				com.hp.hpl.jena.rdf.model.Statement sss = it.nextStatement();
-
 				System.out.println("			   		" + sss.getPredicate() + ", " + sss.getLiteral());
-
 				write_add_info_of_attribute(docUri, attUri, linkDocUri, sss.getPredicate(), sss.getLiteral(), node);
 			}
+
+			// добавим ссылку на шаблон ссылки
+			write_add_info_of_attribute(docUri, attUri, linkDocUri, ResourceFactory.createProperty(predicates.rdf__type),
+					ResourceFactory.createProperty(templateUri), node);
 
 		} else
 		{
@@ -1329,9 +1339,12 @@ public class Fetcher
 
 		// добавить карточку файла в документ
 		r_doc.addProperty(ResourceFactory.createProperty(attUri), ResourceFactory.createProperty(file_id));
+
+		// добавить реификацию в документ
+		write_add_info_of_attribute(docUri, attUri, file_id, predicates.swrc__name, file_name, node);
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static void write_add_info_of_attribute(String subject, String predicate, String object, String addInfo_predicate,
 			String addInfo_value, Model node) throws Exception
@@ -1532,14 +1545,14 @@ public class Fetcher
 		{
 			code_onto.put("date_from", predicates.swrc__startDate);
 			code_onto.put("date_to", predicates.swrc__endDate);
-			code_onto.put("file", predicates.docs__FileDescription);
+			code_onto.put("file", predicates.docs__attachment);
 			code_onto.put("from", predicates.docs__from);
 			code_onto.put("name", predicates.swrc__name);
 			code_onto.put("subject/тема", predicates.dc__subject);
 			code_onto.put("to", predicates.swrc__endDate);
 			code_onto.put("в копию", predicates.docs__carbon_copy);
-			code_onto.put("вложение", predicates.docs__FileDescription);
-			code_onto.put("вложения", predicates.docs__FileDescription);
+			code_onto.put("вложение", predicates.docs__attachment);
+			code_onto.put("вложения", predicates.docs__attachment);
 			code_onto.put("дата начала", predicates.swrc__startDate);
 			code_onto.put("дата окончания", predicates.swrc__endDate);
 			code_onto.put("дата окончания (планируемая)", predicates.swrc__endDate);

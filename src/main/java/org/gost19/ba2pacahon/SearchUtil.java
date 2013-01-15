@@ -18,31 +18,35 @@ import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResultsRequestType;
 import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchResultsResponseType;
 import ru.mndsc.bigarch.wsclient.bl.searchservice.SearchService;
 
-public class SearchUtil {
+public class SearchUtil
+{
 
 	private static SearchEndpoint searchPort;
 	private static SearchService searchService;
 	private static SearchUtil instance;
 
-	private SearchUtil() {
+	private SearchUtil()
+	{
 	}
 
-	public static SearchUtil getInstance() {
-		if (instance == null) {
+	public static SearchUtil getInstance()
+	{
+		if (instance == null)
+		{
 			instance = new SearchUtil();
 		}
 		return instance;
 	}
 
-	public ArrayList<String> getAllDocumentsOfType(QName qname, String url,
-			String ticket, Map<String, String> params)
-			throws Exception {
+	public ArrayList<String> getAllDocumentsOfType(QName qname, String url, String ticket, Map<String, String> params)
+			throws Exception
+	{
 		searchService = new SearchService(new URL(url), qname);
 		return searchDocsAttributive(params, ticket);
 	}
 
-	private ArrayList<String> searchDocsAttributive(
-			Map<String, String> requestData, String ticketId) throws Exception {
+	private ArrayList<String> searchDocsAttributive(Map<String, String> requestData, String ticketId) throws Exception
+	{
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("search-type", "attributive");
 		map.put("search-objects", "documents");
@@ -50,30 +54,32 @@ public class SearchUtil {
 		return searchInternal(map, ticketId);
 	}
 
-	private SearchEndpoint getSearchEndpoint() {
-		if (null == searchPort) {
+	private SearchEndpoint getSearchEndpoint()
+	{
+		if (null == searchPort)
+		{
 			searchPort = searchService.getSearchServiceEndpointPort();
 		}
 		return searchPort;
 	}
 
-	private ArrayList<String> searchInternal(Map<String, String> requestData,
-			String ticketId) throws Exception {
+	private ArrayList<String> searchInternal(Map<String, String> requestData, String ticketId) throws Exception
+	{
 		SearchEndpoint endpoint = getSearchEndpoint();
 		SearchRequestType requestBase = new SearchRequestType();
 		requestBase.setRequestData(createHSearchRequest(requestData));
-		SearchResponseType searchResponse = endpoint.searchSync(ticketId,
-				requestBase);
-//		if (searchResponse.isErrorOccurred())
-//			throw new IllegalStateException(
-//					"Exception occured while requesting: " + requestData);
+		SearchResponseType searchResponse = endpoint.searchSync(ticketId, requestBase);
+		//		if (searchResponse.isErrorOccurred())
+		//			throw new IllegalStateException(
+		//					"Exception occured while requesting: " + requestData);
 
 		int offset = 0;
 		int quant = 1000;
 
 		ArrayList<String> result = new ArrayList<String>();
 		SearchResultsResponseType srt;
-		do {
+		do
+		{
 
 			SearchResultsRequestType request = new SearchResultsRequestType();
 			request.setFromPosition(offset);
@@ -82,12 +88,14 @@ public class SearchUtil {
 
 			srt = endpoint.getSearchResults(ticketId, request);
 
-			if (offset == 0) {
+			if (offset == 0)
+			{
 				System.out.println("Total : " + srt.getTotalCount() + "...");
 			}
 			System.out.print("got " + offset + " docs of " + srt.getTotalCount() + "...");
-			
-			for (SearchResultResponseType sr : srt.getResults()) {
+
+			for (SearchResultResponseType sr : srt.getResults())
+			{
 				result.add(sr.getId());
 			}
 			offset += quant;
@@ -95,11 +103,13 @@ public class SearchUtil {
 		return result;
 	}
 
-	private MapDataType createHSearchRequest(Map<String, String> map) {
+	private MapDataType createHSearchRequest(Map<String, String> map)
+	{
 		MapDataType mapDataType = new MapDataType();
 		HashMapType result = new HashMapType();
 		mapDataType.setMap(result);
-		for (Map.Entry<String, String> entry : map.entrySet()) {
+		for (Map.Entry<String, String> entry : map.entrySet())
+		{
 			HashMapEntryType mapEntry = new HashMapEntryType();
 			mapEntry.setKey(entry.getKey());
 			mapEntry.setValue(entry.getValue());

@@ -22,9 +22,9 @@ public class predicates
 	public static final String vcard = "http://www.w3.org/2006/vcard/ns#";
 
 	public final static String all_prefixs = "@prefix rdf: <" + rdf + "> .\n" + "@prefix rdfs: <" + rdfs + "> .\n"
-			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix dc: <" + dc + "> .\n" + "@prefix msg: <" + msg + "> .\n" + "@prefix auth: <" + auth + "> .\n"
-			+ "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto + "> .\n" + "@prefix vcard: <" + vcard + "> .\n" 
-			+ "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
+			+ "@prefix xsd: <" + xsd + "> .\n" + "@prefix dc: <" + dc + "> .\n" + "@prefix msg: <" + msg + "> .\n"
+			+ "@prefix auth: <" + auth + "> .\n" + "@prefix zdb: <" + zdb + "> .\n" + "@prefix user_onto: <" + user_onto
+			+ "> .\n" + "@prefix vcard: <" + vcard + "> .\n" + "@prefix gost19: <" + gost19 + "> .\n" + "@prefix swrc: <" + swrc
 			+ "> .\n" + "@prefix docs: <" + docs + "> .\n";
 
 	public static final String ns_f_user_onto = "http://user-onto.org";
@@ -70,8 +70,8 @@ public class predicates
 	public static final String rdf__type = rdf + "type";
 	public static final String rdf__subject = rdf + "subject";
 	public static final String rdf__predicate = rdf + "predicate";
-	public static final String rdf__object = rdf + "object";	
-	public static final String rdfs__subClassOf = rdfs + "subClassOf";	
+	public static final String rdf__object = rdf + "object";
+	public static final String rdfs__subClassOf = rdfs + "subClassOf";
 	public static final String rdfs__label = rdfs + "label";
 	public static final String rdfs__comment = rdfs + "comment";
 
@@ -84,7 +84,7 @@ public class predicates
 	public static final String dc__title = dc + "title";
 	public static final String dc__type = dc + "type";
 	public static final String dc__description = dc + "description";
-//	public static final String dc__date = dc + "date";
+	//	public static final String dc__date = dc + "date";
 	public static final String dc__hasPart = dc + "hasPart";
 
 	public static final String swrc__Department = swrc + "Department";
@@ -103,10 +103,9 @@ public class predicates
 	public static final String swrc__keywords = swrc + "keywords";
 	public static final String swrc__number = swrc + "number";
 	public static final String swrc__note = swrc + "note";
-	
+
 	public static final String vcard__Pager = vcard + "Pager";
 	public static final String vcard__Cell = vcard + "Cell";
-	
 
 	public static final String gost19__middleName = gost19 + "middleName";
 	public static final String gost19__externalIdentifer = gost19 + "externalIdentifer";
@@ -123,7 +122,7 @@ public class predicates
 	public static final String gost19__work_mobile = gost19 + "work_mobile";
 	public static final String gost19__mobile = gost19 + "mobile";
 	public static final String gost19__template = gost19 + "template";
-	
+
 	public static final String docs__Group = docs + "Group";
 	public static final String docs__Document = docs + "Document";
 	public static final String docs__document = docs + "document";
@@ -151,7 +150,7 @@ public class predicates
 	public static final String docs__active = docs + "active";
 	public static final String docs__actual = docs + "actual";
 	public static final String docs__kindOf = docs + "kindOf";
-	
+
 	public static final String auth__login = auth + "login";
 	public static final String auth__credential = auth + "credential";
 	public static final String auth__Authenticated = auth + "Authenticated";
@@ -166,7 +165,7 @@ public class predicates
 	{
 		if (prefixs.isEmpty())
 		{
-			prefixs.put("user_onto", user_onto);			
+			prefixs.put("user_onto", user_onto);
 			prefixs.put("rdf", rdf);
 			prefixs.put("rdfs", rdfs);
 			prefixs.put("msg", msg);
@@ -176,10 +175,10 @@ public class predicates
 			prefixs.put("gost19", gost19);
 			prefixs.put("query", query);
 			prefixs.put("auth", auth);
-			prefixs.put("dc", dc);			
-			prefixs.put("owl", owl);			
-			prefixs.put("xsd", xsd);			
-			prefixs.put("vcard", vcard);			
+			prefixs.put("dc", dc);
+			prefixs.put("owl", owl);
+			prefixs.put("xsd", xsd);
+			prefixs.put("vcard", vcard);
 		}
 
 		return prefixs;

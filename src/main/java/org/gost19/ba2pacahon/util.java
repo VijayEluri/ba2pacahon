@@ -14,8 +14,7 @@ public class util
 	private static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.sss");
 	private static SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-	public static String[] getRecordIdAndTemplateIdOfDocId__OnDate(String id, Date date, Connection connection)
-			throws Exception
+	public static String[] getRecordIdAndTemplateIdOfDocId__OnDate(String id, Date date, Connection connection) throws Exception
 	{
 		String result[];
 		if (date == null)

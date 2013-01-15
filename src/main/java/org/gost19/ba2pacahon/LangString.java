@@ -25,17 +25,14 @@ public class LangString
 					if (lang.equals("en"))
 					{
 						res.text_en = text;
-					}
-					else if (lang.equals("ru"))
+					} else if (lang.equals("ru"))
 					{
 						res.text_ru = text;
 					}
-					
 
 				}
 			}
-		}
-		else
+		} else
 		{
 			res.text_ru = in;
 		}

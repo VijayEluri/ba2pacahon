@@ -79,8 +79,7 @@ public class Translit
 			{
 				String replace = charTable[i];
 				sb.append(replace == null ? symbol : replace);
-			}
-			else
+			} else
 			{
 				sb.append(symbol);
 			}

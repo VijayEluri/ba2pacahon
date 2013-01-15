@@ -36,8 +36,8 @@ public class PacahonClient
 		UUID msg_uuid = UUID.randomUUID();
 
 		String msg = "msg:M" + msg_uuid.toString() + "\n" + "rdf:type msg:Message ;\n" + "msg:sender \"client2\" ;\n"
-				+ "msg:reciever \"pacahon\" ;\n" + "msg:command \"get_ticket\" ;\n" + "msg:args\n" + "[\n"
-				+ "auth:login \"" + login + "\" ;\n" + "auth:credential \"" + credential + "\" ;\n" + "] .\0";
+				+ "msg:reciever \"pacahon\" ;\n" + "msg:command \"get_ticket\" ;\n" + "msg:args\n" + "[\n" + "auth:login \""
+				+ login + "\" ;\n" + "auth:credential \"" + credential + "\" ;\n" + "] .\0";
 
 		socket.send(msg.getBytes(), 0);
 
@@ -80,8 +80,8 @@ public class PacahonClient
 		// model.write(baos, "N3");
 
 		String msg = "msg:M" + msg_uuid.toString() + "\n" + "rdf:type msg:Message ;\n" + "msg:sender \"client2\" ;\n"
-				+ "msg:ticket \"" + ticket + "\" ;\n" + "msg:reciever \"pacahon\" ;\n" + "msg:command \"put\" ;\n"
-				+ "msg:args\n" + "\"\"\"" + str_data + "\"\"\" .\0";
+				+ "msg:ticket \"" + ticket + "\" ;\n" + "msg:reciever \"pacahon\" ;\n" + "msg:command \"put\" ;\n" + "msg:args\n"
+				+ "\"\"\"" + str_data + "\"\"\" .\0";
 
 		// отправляем
 		socket.send(msg.getBytes(), 0);
@@ -122,8 +122,8 @@ public class PacahonClient
 		// model.write(baos, "N3");
 
 		String msg = "msg:M" + msg_uuid.toString() + "\n" + "rdf:type msg:Message ;\n" + "msg:sender \"client2\" ;\n"
-				+ "msg:ticket \"" + ticket + "\" ;\n" + "msg:reciever \"pacahon\" ;\n" + "msg:command \"get\" ;\n"
-				+ "msg:args\n" + "\"\"\"" + str_data + "\"\"\" .\0";
+				+ "msg:ticket \"" + ticket + "\" ;\n" + "msg:reciever \"pacahon\" ;\n" + "msg:command \"get\" ;\n" + "msg:args\n"
+				+ "\"\"\"" + str_data + "\"\"\" .\0";
 
 		// отправляем
 		socket.send(msg.getBytes(), 0);
@@ -145,10 +145,10 @@ public class PacahonClient
 				if (stop > 0)
 				{
 					result = result.substring(start + 3, stop);
-					
+
 					// заменить только наружние экранированные кавычки
 					result = result.replaceAll("\\\\\"", "\"");
-//					result = result.replaceAll("\n", "\\n");
+					//					result = result.replaceAll("\n", "\\n");
 
 					Model message = ModelFactory.createDefaultModel();
 

@@ -9,14 +9,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.zeromq</groupId>
-            <artifactId>jzmq</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-<!--        <scope>provided</scope> -->
-        </dependency>
-
-
-        <dependency>
            <groupId>org.zeromq</groupId>
            <artifactId>jzmq</artifactId>
            <version>1.1.0-SNAPSHOT</version>
@@ -29,31 +21,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.gost19.pacahon.client</groupId>
-            <artifactId>ba-pacahon-driver</artifactId>
-            <version>0.14-SNAPSHOT</version>
-        </dependency>
-        
-        <dependency>
-                <groupId>ru.mndsc.bigarchive.client.web</groupId>
-                <artifactId>bacw-import</artifactId>
-                <version>0.16.22-SNAPSHOT</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.hp.hpl.jena</groupId>
-            <artifactId>jena</artifactId>
-            <version>2.6.4</version>
+	    <groupId>org.mongodb</groupId>
+	    <artifactId>mongo-java-driver</artifactId>
+	    <version>2.11.1</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-rt</artifactId>
-            <version>2.1.5</version>
-            <type>pom</type>
+                        <groupId>ru.mndsc.bigarchive.server</groupId>
+                        <artifactId>big-archive-server-kernel-core</artifactId>
+                        <version>0.17.0-SNAPSHOT</version>
         </dependency>
-      
 
         <dependency>
             <groupId>mysql</groupId>

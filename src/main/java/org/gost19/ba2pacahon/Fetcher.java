@@ -53,11 +53,12 @@ public class Fetcher
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
 	 */
 
-	private static void fetchDocumentTypes() throws Exception
+	private static void fetchDocumentTypes(long timestamp_start) throws Exception
 	{
 
 		ResultSet templatesRs = connection.createStatement().executeQuery(
-				"select objectId FROM objects where isTemplate = 1 and actual = 1 ORDER BY timestamp ASC");
+				"select objectId FROM objects where isTemplate = 1 and actual = 1 and timestamp > " + timestamp_start
+						+ " ORDER BY timestamp ASC");
 
 		while (templatesRs.next())
 		{
@@ -231,12 +232,11 @@ public class Fetcher
 		return res;
 	}
 
-	private static int fetchDocuments() throws Exception
+	private static int fetchDocuments(long timestamp_start) throws Exception
 	{
 		String docsIdDataQuery;
 		ResultSet docRecordsRs;
 
-		long timestamp_start = 0;
 		long timestamp_delta = 10 * 24 * 60 * 60 * 1000;
 
 		long prev_doc_count = 0;
@@ -292,7 +292,7 @@ public class Fetcher
 		return count_documents;
 	}
 
-	static void init_source() throws Exception
+	static void connect_to_mysql() throws Exception
 	{
 		System.out.print("connect to source database " + dbUrl + "...");
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -346,10 +346,8 @@ public class Fetcher
 		}
 	}
 
-	private static void toQueueDocumentTypes() throws Exception
+	private static void toQueueDocumentTypes(BasicDBObject query) throws Exception
 	{
-		BasicDBObject query = new BasicDBObject("type", "TEMPLATE");
-
 		DBCursor cursor = ba_docs_coll.find(query);
 
 		try
@@ -378,7 +376,7 @@ public class Fetcher
 		DBCursor cursor = ba_docs_coll.find(query);
 
 		int count = 0;
-		
+
 		try
 		{
 			while (cursor.hasNext())
@@ -386,7 +384,6 @@ public class Fetcher
 				DBObject obj = cursor.next();
 
 				String content = (String) obj.get("content");
-				String id = (String) obj.get("id");
 				String version = (String) obj.get("version");
 				String typeVersion = (String) obj.get("templateVersionId");
 
@@ -409,9 +406,9 @@ public class Fetcher
 
 				if ((is_processed_links.equals("N") && count_references_on_document > 0) || is_processed_links.equals("Y"))
 				{
-//					if (is_processed_links.equals("Y") && count == 100)
-//						break;
-					
+					//					if (is_processed_links.equals("Y") && count == 100)
+					//						break;
+
 					XmlDocument doc = (XmlDocument) XmlUtil.unmarshall(content);
 					doc.setVersionId(version);
 					doc.setTypeVersionId(typeVersion);
@@ -426,65 +423,118 @@ public class Fetcher
 
 						String dd = JSONObject.toJSONString(jo);
 						messagingManager.sendMessage(queue, dd);
-						
-						count ++;
+
 					} catch (Exception ex)
 					{
 						ex.printStackTrace();
 					}
+
 				}
-				// System.out.println(dd);
+				count++;
 			}
 		} finally
 		{
 			cursor.close();
 		}
+		System.out.println("count docs:" + count);
 	}
 
 	public static void main(String[] args) throws Exception
 	{
+		long start_timestamp = 0;
+		byte ADD_DELTA = 0;
+		byte TO_XML = 1;
+		byte TO_QUEUE = 1;
+
+		if (args != null && args.length > 0)
+		{
+			if (args[0].equals("ADD-DELTA") == true)
+			{
+				ADD_DELTA = 1;
+				TO_XML = 1;
+				TO_QUEUE = 1;
+				if (args.length > 1)
+				{
+					start_timestamp = Long.parseLong(args[1]);
+				}
+
+			}
+			if (args[0].equals("ADD-DELTA-TO-XML") == true)
+			{
+				TO_XML = 1;
+				ADD_DELTA = 1;
+				TO_QUEUE = 0;
+				if (args.length > 1)
+				{
+					start_timestamp = Long.parseLong(args[1]);
+				}
+
+			}
+
+		}
+
 		messagingManager = new AMQPMessagingManager();
 		loadProperties();
 
 		MongoClient mongoClient = new MongoClient(mongodb_host, mongodb_port);
 		DB pacahon_db = mongoClient.getDB("pacahon");
-
 		ba_docs_coll = pacahon_db.getCollection("ba_docs");
 
-		if (ba_docs_coll.count() == 0)
+		if (ADD_DELTA == 1 && start_timestamp == 0)
 		{
-			try
+			DBCursor cursor = ba_docs_coll.find(new BasicDBObject()).sort(new BasicDBObject("timestamp_l", -1));
+			if (cursor.hasNext())
+			{
+				DBObject obj = cursor.next();
+
+				start_timestamp = (Long) obj.get("timestamp_l");
+			}
+		}
+
+		try
+		{
+			if (TO_XML == 1 && ba_docs_coll.count() == 0 || ADD_DELTA == 1)
 			{
 				System.out.println("start sql ba xml -> mongo ba json");
-				System.out.println("init_source");
-				init_source();
+				System.out.println("connect to mysql");
+				connect_to_mysql();
 				System.out.println("fetchDocumentTypes");
-				fetchDocumentTypes();
+				fetchDocumentTypes(start_timestamp);
 				System.out.println("fetchDocuments");
-				fetchDocuments();
-				System.out.println("set__count_references_document");
-				set__count_references_document();
-				System.out.println("end start sql ba xml -> mongo ba json");
-				// Thread.currentThread().sleep(999999999);
-			} catch (Exception ex)
-			{
-				System.out.println("Error !");
-				ex.printStackTrace(System.out);
+				fetchDocuments(start_timestamp);
+				if (ADD_DELTA == 0)
+				{
+					System.out.println("set__count_references_document");
+					set__count_references_document();
+					System.out.println("end start sql ba xml -> mongo ba json");
+				}
+
 			}
 
-		} else
+			if (TO_QUEUE == 1 && (ba_docs_coll.count() > 0 || ADD_DELTA == 1))
+			{
+				System.out.println("start ba json -> pacahon");
+				messagingManager.init(host, Integer.parseInt(port), virtualHost, userName, password, responseWaitingLimit, null);
+				System.out.println("TEMPLATE pass I");
+				toQueueDocumentTypes(new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject("$gt",
+						start_timestamp)));
+				System.out.println("TEMPLATE pass II");
+				toQueueDocumentTypes(new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject("$gt",
+						start_timestamp)));
+				System.out.println("DOCUMENTS pass I");
+				toQueueDocuments(
+						new BasicDBObject("type", "DOCUMENT").append("timestamp_l", new BasicDBObject("$gt", start_timestamp)),
+						"N");
+				System.out.println("DOCUMENTS pass II");
+				toQueueDocuments(
+						new BasicDBObject("type", "DOCUMENT").append("timestamp_l", new BasicDBObject("$gt", start_timestamp)),
+						"Y");
+				System.out.println("end ba json -> pacahon");
+			}
+		} catch (Exception ex)
 		{
-			System.out.println("start ba json -> pacahon");
-			messagingManager.init(host, Integer.parseInt(port), virtualHost, userName, password, responseWaitingLimit, null);
-			System.out.println("TEMPLATE pass I");
-			toQueueDocumentTypes();
-			System.out.println("TEMPLATE pass II");
-			toQueueDocumentTypes();
-			System.out.println("DOCUMENTS pass I");
-			toQueueDocuments(new BasicDBObject("type", "DOCUMENT"), "N");
-			System.out.println("DOCUMENTS pass II");
-			toQueueDocuments(new BasicDBObject("type", "DOCUMENT"), "Y");
-			System.out.println("end ba json -> pacahon");
+			System.out.println("Error !");
+			ex.printStackTrace(System.out);
 		}
 
 	}

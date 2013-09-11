@@ -1,0 +1,70 @@
+[
+	{
+	 "@" : "docs:acl",
+	 "a": "rdfs:Class",
+	 "ba:systemInformation": "$defaultRepresentation=auth:to;$order=auth:to|auth:target|auth:rights|auth:date_from|auth:date_to",
+	 "dc:created": "2013-07-23T11:48:22.481+00:00",
+	 "dc:creator": "zdb:doc_541e2793-abc4-437a-9c71-6a1ac0434acf",
+	 "dc:identifier": "docs:acl",
+	 "dc:modified": "2013-07-23T11:48:22.481+00:00",
+	 "docs:active": "true",
+	 "docs:actual": "true",
+	 "docs:kindOf": "user_template",
+	 "link:exportPredicates": "auth:to",
+	 "rdfs:label": "Запись о правах@ru",
+	 "rdfs:subClassOf": "docs:Document",	
+	 "docs:full-text-search" : "0"
+	},
+	{
+	 "@" : "uo:rstr_docs:acl_auth:rights",
+	 "a": "owl:Restriction",
+	 "ba:code": "auth:rights",
+	 "ba:description": "$tooltip=;$isString;",
+	 "dc:hasPart": "docs:acl",
+	 "dc:identifier": "docs:acl",
+	 "owl:allValuesFrom": "xsd:string",
+	 "owl:minCardinality": "1",
+	 "owl:onProperty": "auth:rights",
+	 "rdfs:label": "Права@ru"	
+	},
+	{
+	 "@" : "uo:rstr_docs:acl_uo:$comment",
+	 "a": "owl:Restriction",
+	 "ba:code": "$comment",
+	 "ba:description": "$tooltip=null;",
+	 "dc:hasPart": "docs:acl",
+	 "dc:identifier": "docs:acl",
+	 "owl:allValuesFrom": "xsd:string",
+	 "owl:maxCardinality": "1",
+	 "owl:onProperty": "uo:$comment",
+	 "rdfs:label": "$comment@ru"	
+	},
+	{
+	 "@" : "uo:rstr_docs:acl_auth:target",
+	 "a": "owl:Restriction",
+	 "ba:code": "auth:target",
+	 "ba:description": "$tooltip=;$dictionaryType=0;",
+	 "dc:hasPart": "docs:acl",
+	 "dc:identifier": "docs:acl",
+	 "owl:allValuesFrom": "docs:Document",
+	 "owl:maxCardinality": "1",
+	 "owl:minCardinality": "1",
+	 "owl:onProperty": "auth:target",
+	 "rdfs:label": "Охраняемый обьект@ru"	
+	},
+	{
+	 "@" : "uo:rstr_docs:acl_auth:to",
+	 "a": "owl:Restriction",
+	 "ba:code": "auth:to",
+	 "ba:description": "$tooltip=;",
+	 "ba:organizationTag": "user;department",
+	 "dc:hasPart": "docs:acl",
+	 "dc:identifier": "docs:acl",
+	 "link:exportPredicates": ["swrc:lastName","swrc:firstName","gost19:middleName","swrc:name"],
+	 "owl:maxCardinality": "1",
+	 "owl:minCardinality": "1",
+	 "owl:onProperty": "auth:to",
+	 "owl:someValuesFrom": ["swrc:Person","swrc:Department"],
+	 "rdfs:label": "Кому@ru"	
+}
+]

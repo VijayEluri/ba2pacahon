@@ -12,7 +12,9 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import ru.mndsc.bigarchive.server.kernel.document.XmlUtil;
@@ -44,10 +46,18 @@ public class Fetcher
 	private static String password;
 	private static String queue;
 	private static long responseWaitingLimit = 120000;
+
+	private static String ba_xml_mongodb_host;
+	private static int ba_xml_mongodb_port;
+
 	private static String mongodb_host;
 	private static int mongodb_port;
 
-	private static DBCollection ba_docs_coll;
+	private static String az_mongodb_host;
+	private static int az_mongodb_port;
+
+	private static DBCollection ba_xml_coll;
+	private static DBCollection simple_coll;
 
 	/**
 	 * Выгружает данные структуры документов в виде пользовательских онтологий
@@ -89,7 +99,7 @@ public class Fetcher
 					BasicDBObject doc1 = new BasicDBObject("id", docId).append("version", recordId).append("type", "TEMPLATE")
 							.append("content", docXmlStr).append("timestamp", new Date(timestamp))
 							.append("timestamp_l", timestamp);
-					ba_docs_coll.insert(doc1);
+					ba_xml_coll.insert(doc1);
 				} catch (Exception ex)
 				{
 					ex.printStackTrace();
@@ -112,7 +122,7 @@ public class Fetcher
 	{
 		HashMap<String, Integer> count_references_document = new HashMap<String, Integer>();
 
-		DBCursor cursor = ba_docs_coll.find(new BasicDBObject("type", "DOCUMENT"));
+		DBCursor cursor = ba_xml_coll.find(new BasicDBObject("type", "DOCUMENT"));
 
 		try
 		{
@@ -172,7 +182,7 @@ public class Fetcher
 		}
 
 		// заполним ссчетчики ссылок на документ
-		cursor = ba_docs_coll.find(new BasicDBObject("type", "DOCUMENT"));
+		cursor = ba_xml_coll.find(new BasicDBObject("type", "DOCUMENT"));
 
 		try
 		{
@@ -188,7 +198,7 @@ public class Fetcher
 				{
 					try
 					{
-						ba_docs_coll.update(new BasicDBObject("id", id), new BasicDBObject("$set", new BasicDBObject(
+						ba_xml_coll.update(new BasicDBObject("id", id), new BasicDBObject("$set", new BasicDBObject(
 								"count-references-on-document", count_rd)), true, false);
 					} catch (Exception ex)
 					{
@@ -275,7 +285,7 @@ public class Fetcher
 						.append("templateId", templateId).append("templateVersionId", templateVersionId)
 						.append("type", "DOCUMENT").append("content", docXmlStr).append("timestamp", new Date(timestamp))
 						.append("timestamp_l", timestamp);
-				ba_docs_coll.insert(doc1);
+				ba_xml_coll.insert(doc1);
 				count_documents++;
 			}
 			docRecordsRs.close();
@@ -321,6 +331,16 @@ public class Fetcher
 			String els[] = mongo.split(":");
 			mongodb_host = els[0];
 			mongodb_port = Integer.parseInt(els[1]);
+
+			String ba_xml_mongo = properties.getProperty("ba-xml-mongodb", "localhost:27017");
+			els = ba_xml_mongo.split(":");
+			ba_xml_mongodb_host = els[0];
+			ba_xml_mongodb_port = Integer.parseInt(els[1]);
+
+			String az_db = properties.getProperty("az-db", "localhost:27017");
+			els = az_db.split(":");
+			az_mongodb_host = els[0];
+			az_mongodb_port = Integer.parseInt(els[1]);
 		} catch (IOException e)
 		{
 			writeDefaultProperties();
@@ -348,7 +368,7 @@ public class Fetcher
 
 	private static void toQueueDocumentTypes(BasicDBObject query) throws Exception
 	{
-		DBCursor cursor = ba_docs_coll.find(query);
+		DBCursor cursor = ba_xml_coll.find(query);
 
 		try
 		{
@@ -371,9 +391,162 @@ public class Fetcher
 		}
 	}
 
+	private static void fetchAuthorization() throws Exception
+	{
+		// это запись о делегировании
+		//		String DELEGATION_DELEGATE = (String) obj.get("mo/at/acl#de");
+		//		String DELEGATION_OWNER = (String) obj.get("mo/at/acl#ow");
+		//		String DELEGATION_WITH_TREE = (String) obj.get("mo/at/acl#wt");
+		//		String DELEGATION_DOCUMENT_ID = (String) obj.get("mo/at/acl#dg_doc_id");
+
+		DBCollection az_coll = null;
+		MongoClient az_mongoClient = new MongoClient(az_mongodb_host, az_mongodb_port);
+		DB az_pacahon_db = az_mongoClient.getDB("az1");
+		if (az_mongodb_host != null)
+		{
+			az_mongoClient = new MongoClient(az_mongodb_host, az_mongodb_port);
+			az_pacahon_db = az_mongoClient.getDB("az1");
+			az_coll = az_pacahon_db.getCollection("simple");
+		}
+
+		MongoClient mongoClient_doc = new MongoClient(mongodb_host, mongodb_port);
+		DB pacahon_db_doc = mongoClient_doc.getDB("pacahon");
+		simple_coll = pacahon_db_doc.getCollection("simple");
+
+		MongoClient ba_xml_mongoClient = new MongoClient(ba_xml_mongodb_host, ba_xml_mongodb_port);
+		DB ba_xml_pacahon_db = ba_xml_mongoClient.getDB("pacahon");
+		ba_xml_coll = ba_xml_pacahon_db.getCollection("ba_docs");
+
+		int count_acl = 0;
+		int count_doc = 0;
+
+		DBCursor cursor = ba_xml_coll.find(new BasicDBObject("type", "DOCUMENT"));
+		while (cursor.hasNext())
+		{
+			count_doc++;
+			DBObject obj = cursor.next();
+			String content = (String) obj.get("content");
+			String id = (String) obj.get("id");
+			String version = (String) obj.get("version");
+
+			DBCursor cursor_az = az_coll.find(new BasicDBObject("mo/at/acl#eId", id));
+
+			while (cursor_az.hasNext())
+			{
+				count_acl++;
+				DBObject obj_az = cursor_az.next();
+
+				// это ACL запись
+				String AUTHOR_SUBSYSTEM_ELEMENT = (String) obj_az.get("mo/at/acl#atSsE");
+				String TARGET_SUBSYSTEM_ELEMENT = (String) obj_az.get("mo/at/acl#tgSsE");
+				String AUTHOR_SUBSYSTEM = (String) obj_az.get("mo/at/acl#atSs");
+				String TARGET_SUBSYSTEM = (String) obj_az.get("mo/at/acl#tgSs");
+				String DATE_FROM = (String) obj_az.get("mo/at/acl#dtF");
+				String DATE_TO = (String) obj_az.get("mo/at/acl#dtT");
+				String ELEMENT_ID = (String) obj_az.get("mo/at/acl#eId");
+				String RIGHTS = (String) obj_az.get("mo/at/acl#rt");
+				String ss = (String) obj_az.get("ss");
+				ss = ss.substring(ss.indexOf("#") + 1);
+
+				try
+				{
+					JSONArray data = new JSONArray();
+					JSONObject jo = new JSONObject();
+					jo.put("@", "auth:" + ss);
+
+					JSONArray ja = new JSONArray();
+					ja.add("docs:Document");
+					ja.add("docs:acl");
+					jo.put("a", ja);
+					if (AUTHOR_SUBSYSTEM.equals("DOCFLOW"))
+					{
+						DBCursor cursor_1 = simple_coll.find(new BasicDBObject("auth:login", AUTHOR_SUBSYSTEM_ELEMENT));
+						if (cursor_1.hasNext())
+						{
+							DBObject obj_1 = cursor_1.next();
+							AUTHOR_SUBSYSTEM_ELEMENT = (String) obj_1.get("@");
+						}
+						cursor_1.close();
+					} else
+						AUTHOR_SUBSYSTEM_ELEMENT = "zdb:doc_" + AUTHOR_SUBSYSTEM_ELEMENT;
+
+					jo.put("dc:creator", AUTHOR_SUBSYSTEM_ELEMENT);
+
+					if (TARGET_SUBSYSTEM.equals("DOCFLOW"))
+					{
+						DBCursor cursor_1 = simple_coll.find(new BasicDBObject("auth:login", TARGET_SUBSYSTEM_ELEMENT));
+						if (cursor_1.hasNext())
+						{
+							DBObject obj_1 = cursor_1.next();
+							TARGET_SUBSYSTEM_ELEMENT = (String) obj_1.get("@");
+						}
+						cursor_1.close();
+					} else
+						TARGET_SUBSYSTEM_ELEMENT = "zdb:doc_" + TARGET_SUBSYSTEM_ELEMENT;
+					jo.put("auth:to", TARGET_SUBSYSTEM_ELEMENT);
+
+					jo.put("auth:target", "zdb:doc_" + ELEMENT_ID);
+
+					ja = new JSONArray();
+					for (char cc : RIGHTS.toCharArray())
+					{
+						ja.add("+" + cc);
+					}
+					jo.put("auth:rights", ja);
+
+					jo.put("docs:active", "true");
+					jo.put("docs:actual", "true");
+					jo.put("docs:label", "ACL запись");
+					jo.put("dc:identifier", ss);
+					data.add(jo);
+
+					put("000-000-000", data, "fetchAuthorization");
+
+				} catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
+
+				if (count_acl % 1000 == 0)
+					System.out.println("count_acl:" + count_acl + ", count_doc:" + count_doc);
+			}
+
+			cursor_az.close();
+		}
+
+		cursor.close();
+		az_mongoClient.close();
+		mongoClient_doc.close();
+	}
+
+	public static boolean put(String ticket, JSONArray data, String from) throws Exception
+	{
+		try
+		{
+			UUID msg_uuid = UUID.randomUUID();
+
+			String args = JSONArray.toJSONString(data);
+
+			String msg = "{\n \"@\" : \"msg:M" + msg_uuid + "\", \n \"a\" : \"msg:Message\",\n" + "\"msg:sender\" : \"" + from
+					+ "\",\n \"msg:ticket\" : \"" + ticket
+					+ "\", \"msg:reciever\" : \"pacahon\",\n \"msg:command\" : \"put\",\n \"msg:args\" :\n" + args + "\n}";
+
+			// отправляем
+			//		socket.send(msg.getBytes(), 0);
+			//		byte[] rr = socket.recv(0);
+			//		String result = new String(rr, "UTF-8");	
+
+			messagingManager.sendMessage(queue, msg);
+			return true;
+		} catch (Exception ex)
+		{
+			return false;
+		}
+	}
+
 	private static void toQueueDocuments(BasicDBObject query, String is_processed_links) throws Exception
 	{
-		DBCursor cursor = ba_docs_coll.find(query);
+		DBCursor cursor = ba_xml_coll.find(query);
 
 		int count = 0;
 
@@ -443,46 +616,40 @@ public class Fetcher
 	{
 		long start_timestamp = 0;
 		byte ADD_DELTA = 0;
-		byte TO_XML = 1;
-		byte TO_QUEUE = 1;
+
+		loadProperties();
+		messagingManager = new AMQPMessagingManager();
+		messagingManager.init(host, Integer.parseInt(port), virtualHost, userName, password, responseWaitingLimit, null);
 
 		if (args != null && args.length > 0)
 		{
 			if (args[0].equals("ADD-DELTA") == true)
 			{
 				ADD_DELTA = 1;
-				TO_XML = 1;
-				TO_QUEUE = 1;
 				if (args.length > 1)
 				{
 					start_timestamp = Long.parseLong(args[1]);
 				}
 
 			}
-			if (args[0].equals("ADD-DELTA-TO-XML") == true)
+			if (args[0].equals("AZ") == true)
 			{
-				TO_XML = 1;
-				ADD_DELTA = 1;
-				TO_QUEUE = 0;
-				if (args.length > 1)
-				{
-					start_timestamp = Long.parseLong(args[1]);
-				}
-
+				fetchAuthorization();
+				return;
 			}
 
 		}
 
-		messagingManager = new AMQPMessagingManager();
-		loadProperties();
+		//		MongoClient mongoClient = new MongoClient(mongodb_host, mongodb_port);
+		//		DB pacahon_db = mongoClient.getDB("pacahon");
 
-		MongoClient mongoClient = new MongoClient(mongodb_host, mongodb_port);
-		DB pacahon_db = mongoClient.getDB("pacahon");
-		ba_docs_coll = pacahon_db.getCollection("ba_docs");
+		MongoClient ba_xml_mongoClient = new MongoClient(ba_xml_mongodb_host, ba_xml_mongodb_port);
+		DB ba_xml_pacahon_db = ba_xml_mongoClient.getDB("pacahon");
+		ba_xml_coll = ba_xml_pacahon_db.getCollection("ba_docs");
 
 		if (ADD_DELTA == 1 && start_timestamp == 0)
 		{
-			DBCursor cursor = ba_docs_coll.find(new BasicDBObject()).sort(new BasicDBObject("timestamp_l", -1));
+			DBCursor cursor = ba_xml_coll.find(new BasicDBObject()).sort(new BasicDBObject("timestamp_l", -1));
 			if (cursor.hasNext())
 			{
 				DBObject obj = cursor.next();
@@ -493,7 +660,7 @@ public class Fetcher
 
 		try
 		{
-			if (TO_XML == 1 && ba_docs_coll.count() == 0 || ADD_DELTA == 1)
+			if (ba_xml_coll.count() == 0 || ADD_DELTA == 1)
 			{
 				System.out.println("start sql ba xml -> mongo ba json");
 				System.out.println("connect to mysql");
@@ -511,10 +678,9 @@ public class Fetcher
 
 			}
 
-			if (TO_QUEUE == 1 && (ba_docs_coll.count() > 0 || ADD_DELTA == 1))
+			if (ba_xml_coll.count() > 0 || ADD_DELTA == 1)
 			{
 				System.out.println("start ba json -> pacahon");
-				messagingManager.init(host, Integer.parseInt(port), virtualHost, userName, password, responseWaitingLimit, null);
 				System.out.println("TEMPLATE pass I");
 				toQueueDocumentTypes(new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject("$gt",
 						start_timestamp)));
@@ -536,6 +702,8 @@ public class Fetcher
 			System.out.println("Error !");
 			ex.printStackTrace(System.out);
 		}
-
+		//mongoClient.close();
+		messagingManager.close();
+		System.exit(0);
 	}
 }

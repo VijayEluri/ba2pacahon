@@ -1,0 +1,52 @@
+[
+	{
+	 "@" : "docs:organization_card",
+	 "a": "rdfs:Class",
+	 "ba:systemInformation": "$defaultRepresentation=swrc:name;$order=swrc:name|gost19:externalIdentifer",
+	 "dc:creator": "zdb:person_de605422-4c48-4a0c-953d-fb50979ec667",
+	 "dc:identifier": "docs:organization_card",
+	 "dc:modified": "2013-04-24T18:10:30+00:00",
+	 "docs:active": "true",
+	 "docs:actual": "true",
+	 "link:exportPredicates": "swrc:name",
+	 "docs:kindOf": "user_template",
+	 "rdfs:label": "Карточка организации@ru",
+	 "rdfs:subClassOf": "docs:Document"	
+	},
+	{
+	 "@" : "uo:rstr_docs:organization_card_gost19:externalIdentifer",
+	 "a": "owl:Restriction",
+	 "ba:code": "gost19:externalIdentifer",
+	 "ba:description": "$isString;",
+	 "dc:hasPart": "docs:organization_card",
+	 "dc:identifier": "docs:organization_card",
+	 "owl:allValuesFrom": "xsd:string",
+	 "owl:maxCardinality": "1",
+	 "owl:onProperty": "gost19:externalIdentifer",
+	 "rdfs:label": "код@ru"	
+	},
+	{
+	 "@" : "uo:rstr_docs:organization_card_uo:$comment",
+	 "a": "owl:Restriction",
+	 "ba:code": "$comment",
+	 "dc:hasPart": "docs:organization_card",
+	 "dc:identifier": "docs:organization_card",
+	 "owl:allValuesFrom": "xsd:string",
+	 "owl:maxCardinality": "1",
+	 "owl:onProperty": "uo:$comment",
+	 "rdfs:label": "$comment@ru"	
+	},
+	{
+	 "@" : "uo:rstr_docs:organization_card_swrc:name",
+	 "a": "owl:Restriction",
+	 "ba:code": "swrc:name",
+	 "ba:description": "$isString;",
+	 "dc:hasPart": "docs:organization_card",
+	 "dc:identifier": "docs:organization_card",
+	 "owl:allValuesFrom": "xsd:string",
+	 "owl:maxCardinality": "1",
+	 "owl:minCardinality": "1",
+	 "owl:onProperty": "swrc:name",
+	 "rdfs:label": "название@ru"	
+	}
+]

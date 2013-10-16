@@ -616,6 +616,7 @@ public class Fetcher
 	{
 		long start_timestamp = 0;
 		byte ADD_DELTA = 0;
+		String ID = null;
 
 		loadProperties();
 		messagingManager = new AMQPMessagingManager();
@@ -636,6 +637,10 @@ public class Fetcher
 			{
 				fetchAuthorization();
 				return;
+			}
+			if (args[0].equals("ID") == true)
+			{
+				ID = args[1];
 			}
 
 		}
@@ -675,10 +680,9 @@ public class Fetcher
 					set__count_references_document();
 					System.out.println("end start sql ba xml -> mongo ba json");
 				}
-
 			}
 
-			if (ba_xml_coll.count() > 0 || ADD_DELTA == 1)
+			if ((ba_xml_coll.count() > 0 && ID == null)  || ADD_DELTA == 1)
 			{
 				System.out.println("start ba json -> pacahon");
 				System.out.println("TEMPLATE pass I");
@@ -697,6 +701,15 @@ public class Fetcher
 						"Y");
 				System.out.println("end ba json -> pacahon");
 			}
+
+			if (ba_xml_coll.count() > 0 && ID != null)
+			{
+				System.out.println("start ba json -> pacahon, get document with ID");
+				toQueueDocuments(
+						new BasicDBObject("type", "DOCUMENT").append("id", ID),
+						"Y");
+			}
+
 		} catch (Exception ex)
 		{
 			System.out.println("Error !");

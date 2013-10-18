@@ -242,7 +242,7 @@ public class Fetcher
 		return res;
 	}
 
-	private static int fetchDocuments(long timestamp_start) throws Exception
+	private static int fetchDocuments(long timestamp_start, String doc_id) throws Exception
 	{
 		String docsIdDataQuery;
 		ResultSet docRecordsRs;
@@ -253,9 +253,19 @@ public class Fetcher
 
 		while (timestamp_start < System.currentTimeMillis())
 		{
-			docsIdDataQuery = "select objectId, recordId, content, timestamp, templateId, templateVersionId " + "FROM objects "
-					+ "WHERE isTemplate = 0 and actual = 1 and timestamp > " + timestamp_start + " and timestamp <= "
-					+ (timestamp_start + timestamp_delta) + " ORDER BY timestamp ASC";
+			if (timestamp_start == -1)
+				timestamp_start = System.currentTimeMillis();
+
+			if (doc_id != null)
+			{
+				docsIdDataQuery = "select objectId, recordId, content, timestamp, templateId, templateVersionId "
+						+ "FROM objects " + "WHERE isTemplate = 0 and actual = 1 and objectId = '" + doc_id + "'";
+			} else
+			{
+				docsIdDataQuery = "select objectId, recordId, content, timestamp, templateId, templateVersionId "
+						+ "FROM objects " + "WHERE isTemplate = 0 and actual = 1 and timestamp > " + timestamp_start
+						+ " and timestamp <= " + (timestamp_start + timestamp_delta) + " ORDER BY timestamp ASC";
+			}
 			docRecordsRs = connection.createStatement().executeQuery(docsIdDataQuery);
 
 			while (docRecordsRs.next())
@@ -616,31 +626,46 @@ public class Fetcher
 	{
 		long start_timestamp = 0;
 		byte ADD_DELTA = 0;
-		String ID = null;
+		String DOC_ID = null;
+		String TEMPLATE_ID = null;
 
 		loadProperties();
 		messagingManager = new AMQPMessagingManager();
 		messagingManager.init(host, Integer.parseInt(port), virtualHost, userName, password, responseWaitingLimit, null);
 
-		if (args != null && args.length > 0)
+		for (int i = 0; i < args.length; i++)
 		{
-			if (args[0].equals("ADD-DELTA") == true)
+			if (args[i].equals("ADD-DELTA") == true)
 			{
 				ADD_DELTA = 1;
 				if (args.length > 1)
 				{
-					start_timestamp = Long.parseLong(args[1]);
+					try
+					{
+						start_timestamp = Long.parseLong(args[i + 1]);
+						System.out.println("param ADD_DELTA, start timestamp=" + start_timestamp);
+						i++;
+					} catch (Exception ex)
+					{
+
+					}
 				}
 
 			}
-			if (args[0].equals("AZ") == true)
+			if (args[i].equals("AZ") == true)
 			{
+				System.out.println("param AZ");
 				fetchAuthorization();
-				return;
 			}
-			if (args[0].equals("ID") == true)
+			if (args[i].equals("DOC_ID") == true)
 			{
-				ID = args[1];
+				DOC_ID = args[i + 1];
+				System.out.println("param DOC_ID = " + DOC_ID);
+			}
+			if (args[i].equals("TEMPLATE_ID") == true)
+			{
+				TEMPLATE_ID = args[i + 1];
+				System.out.println("param TEMPLATE_ID = " + TEMPLATE_ID);
 			}
 
 		}
@@ -673,7 +698,7 @@ public class Fetcher
 				System.out.println("fetchDocumentTypes");
 				fetchDocumentTypes(start_timestamp);
 				System.out.println("fetchDocuments");
-				fetchDocuments(start_timestamp);
+				fetchDocuments(start_timestamp, null);
 				if (ADD_DELTA == 0)
 				{
 					System.out.println("set__count_references_document");
@@ -682,32 +707,38 @@ public class Fetcher
 				}
 			}
 
-			if ((ba_xml_coll.count() > 0 && ID == null)  || ADD_DELTA == 1)
+			if ((ba_xml_coll.count() > 0 && DOC_ID == null) || ADD_DELTA == 1)
 			{
 				System.out.println("start ba json -> pacahon");
 				System.out.println("TEMPLATE pass I");
-				toQueueDocumentTypes(new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject("$gt",
-						start_timestamp)));
+
+				BasicDBObject select_templates = new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject(
+						"$gt", start_timestamp));
+
+				BasicDBObject select_docs = new BasicDBObject("type", "DOCUMENT").append("timestamp_l", new BasicDBObject("$gt",
+						start_timestamp));
+
+				if (TEMPLATE_ID != null)
+				{
+					select_docs.append("templateId", TEMPLATE_ID);
+				}
+
+				toQueueDocumentTypes(select_templates);
 				System.out.println("TEMPLATE pass II");
-				toQueueDocumentTypes(new BasicDBObject("type", "TEMPLATE").append("timestamp_l", new BasicDBObject("$gt",
-						start_timestamp)));
+				toQueueDocumentTypes(select_templates);
 				System.out.println("DOCUMENTS pass I");
-				toQueueDocuments(
-						new BasicDBObject("type", "DOCUMENT").append("timestamp_l", new BasicDBObject("$gt", start_timestamp)),
-						"N");
+				toQueueDocuments(select_docs, "N");
 				System.out.println("DOCUMENTS pass II");
-				toQueueDocuments(
-						new BasicDBObject("type", "DOCUMENT").append("timestamp_l", new BasicDBObject("$gt", start_timestamp)),
-						"Y");
+				toQueueDocuments(select_docs, "Y");
 				System.out.println("end ba json -> pacahon");
 			}
 
-			if (ba_xml_coll.count() > 0 && ID != null)
+			if (ba_xml_coll.count() > 0 && DOC_ID != null)
 			{
-				System.out.println("start ba json -> pacahon, get document with ID");
-				toQueueDocuments(
-						new BasicDBObject("type", "DOCUMENT").append("id", ID),
-						"Y");
+				connect_to_mysql();				
+				System.out.println("start ba json -> pacahon, get document with DOC_ID=" + DOC_ID);
+				fetchDocuments(-1, DOC_ID);
+				toQueueDocuments(new BasicDBObject("type", "DOCUMENT").append("id", DOC_ID), "Y");
 			}
 
 		} catch (Exception ex)

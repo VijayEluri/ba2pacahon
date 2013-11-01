@@ -22,3 +22,16 @@ db.simple.ensureIndex({ "gost19:active": 1 });
 db.simple.ensureIndex({ "gost19:actual": 1 });
 
 
+
+
+
+ba_doc:
+db.ba_docs.ensureIndex({ "id" : 1 }); 
+db.ba_docs.ensureIndex({ "version" : 1 }, { unique : true }); 
+db.ba_docs.ensureIndex({ "type" : 1 }); 
+db.ba_docs.ensureIndex({ "templateId" : 1 }); 
+db.ba_docs.ensureIndex({ "templateVersionId" : 1 }); 
+db.ba_docs.ensureIndex({ "timestamp" : 1 }); 
+db.ba_docs.ensureIndex({ "timestamp" : -1 }); 
+db.ba_docs.ensureIndex({ "timestamp_l" : 1 }); 
+db.ba_docs.ensureIndex({ "timestamp_l" : -1 }); 

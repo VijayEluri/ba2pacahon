@@ -3,5 +3,5 @@
 
 rm convert.log
 
-java -d64 -cp ./target/ba2pacahon.jar org.gost19.ba2pacahon.Fetcher
+java -d64 -cp ./target/ba2veda.jar -Djava.library.path=/usr/local/lib org.gost19.ba2veda.Fetcher
 #>>convert.log

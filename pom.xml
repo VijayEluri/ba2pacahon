@@ -1,24 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.mondigroup.syk</groupId>
-	<artifactId>ba2pacahon</artifactId>
+	<groupId>sm.tools</groupId>
+	<artifactId>ba2veda</artifactId>
 	<version>0.1-SNAPSHOT</version>
-	<name>from ba to pacahon converter</name>
+	<name>from BA to VEDA converter</name>
 
     <dependencies>
-
-        <dependency>
-           <groupId>org.zeromq</groupId>
-           <artifactId>jzmq</artifactId>
-           <version>1.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.gost19.pacahon.client</groupId>
-            <artifactId>pacahon-client</artifactId>
-            <version>0.6-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
 	    <groupId>org.mongodb</groupId>
@@ -26,11 +14,11 @@
 	    <version>2.11.1</version>
         </dependency>
 
-            <dependency>
-                <groupId>ru.mndsc.zdms_component</groupId>
-                <artifactId>zdms_component-messaging</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
-            </dependency>
+        <dependency>
+             <groupId>org.gost19.pacahon.client</groupId>
+             <artifactId>ba-pacahon-driver</artifactId>
+             <version>0.14-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>ru.mndsc.bigarchive.server</groupId>
@@ -39,10 +27,35 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.mndsc.bigarchive.client.web</groupId>
+            <artifactId>big-archive-client-web-kernel</artifactId>
+            <version>0.16.22-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.6</version>
         </dependency>
+
+<dependency>
+    <groupId>commons-httpclient</groupId>
+    <artifactId>commons-httpclient</artifactId>
+    <version>3.1</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.3.5</version>
+</dependency>
+ 
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpmime</artifactId>
+    <version>4.3.5</version>
+</dependency>
+
     </dependencies>
 	<profiles>
 		<profile>
@@ -66,7 +79,7 @@
 	</profiles>
 
     <build>
-		<finalName>ba2pacahon</finalName>
+		<finalName>ba2veda</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -82,7 +95,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.gost19.ba2pacahon.Fetcher</mainClass>
+							<mainClass>org.gost19.ba2veda.Fetcher</mainClass>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib</classpathPrefix>
 						</manifest>

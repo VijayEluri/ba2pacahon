@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by User (EMBRACE) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+xmlns="http://filemanager.zdms_component.mndsc.ru/" 
+targetNamespace="http://filemanager.zdms_component.mndsc.ru/" 
+elementFormDefault="qualified" attributeFormDefault="unqualified" 
+version="1.0" xml:lang="ru"
+xmlns:xmime="http://www.w3.org/2005/05/xmlmime">
+	<xs:complexType name="requestHeaderType">
+		<xs:annotation>
+			<xs:documentation>заголовок запросов</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="contextName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Имя контекста</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="responseHeaderType">
+		<xs:annotation>
+			<xs:documentation>заголовок ответов</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="contextName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Имя контекста</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:element name="storeFileRequestEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="requestHeaderType"/>
+				<xs:element name="fileEntry" type="fileEntryType"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="storeFileResponseEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="id" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Новый идентификатор файла в хранилище</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="storeFileFaultEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="cause" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Причина ошибки в сохранении файла</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getFilesFaultEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="cause" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Причина ошибки в получении файла</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getFilesRequestEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="requestHeaderType"/>
+				<xs:element name="ids">
+					<xs:annotation>
+						<xs:documentation>Идентифкаторы запрашиваемых файлов</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="id" type="xs:string" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>Идентификатор</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="withoutData" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Не запрашивать данные или нет?</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getFilesResponseEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="fileEntries">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="fileEntry" type="fileEntryType" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+    <xs:element name="getVersionRequestEnvelope">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header" type="requestHeaderType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="getVersionResponseEnvelope">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header" type="responseHeaderType"/>
+                <xs:element name="version" minOccurs="0" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>версия модуля</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+	
+	
+	<xs:element name="getIdsListRequestEnvelope">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header" type="requestHeaderType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="getIdsListResponseEnvelope">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header" type="responseHeaderType"/>
+                <xs:element name="ids" maxOccurs="unbounded" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>идентификторы файлов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+	
+
+	<xs:element name="getIndexedFilesRequestEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="requestHeaderType"/>
+				<xs:element name="ids" type="xs:string"  maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>идентификторы файлов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getIndexedFilesResponseEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="fileIndexEntries">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="indexedFileEntry" type="indexedFileType" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="getIndexedFilesFaultEnvelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="responseHeaderType"/>
+				<xs:element name="cause" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Причина ошибки в индексации файла</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	
+    <xs:complexType name="fileEntryType">
+		<xs:annotation>
+			<xs:documentation>Тип для вхождений файлов</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:string"/>
+			<xs:element name="size" type="xs:long"/>
+			<xs:element name="name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Имя файла</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="data" type="xs:base64Binary" xmime:expectedContentTypes="application/octet-stream">
+				<xs:annotation>
+					<xs:documentation>Данные</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+    <xs:complexType name="indexedFileType">
+		<xs:annotation>
+			<xs:documentation>Тип для индексов файлов</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:string"/>
+			<xs:element name="name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Имя файла</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="index" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Данные</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

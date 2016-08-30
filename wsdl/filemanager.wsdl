@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by User (EMBRACE) -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://filemanager.zdms_component.mndsc.ru/" targetNamespace="http://filemanager.zdms_component.mndsc.ru/">
+  <types>
+    <xs:schema>
+      <xs:import namespace="http://filemanager.zdms_component.mndsc.ru/" schemaLocation="filemanager.xsd"/>
+    </xs:schema>
+  </types>
+  
+	
+  <message name="getIdsListRequest">
+    <part name="request" element="tns:getIdsListRequestEnvelope"/>
+  </message>
+  <message name="getIdsListResponse">
+    <part name="response" element="tns:getIdsListResponseEnvelope"/>
+  </message>
+	
+	
+  <message name="storeFileRequest">
+    <part name="request" element="tns:storeFileRequestEnvelope"/>
+  </message>
+  <message name="storeFileResponse">
+    <part name="response" element="tns:storeFileResponseEnvelope"/>
+  </message>
+  <message name="storeFileFault">
+    <part name="faultResponse" element="tns:storeFileFaultEnvelope"/>
+  </message>
+  
+  <message name="getFilesRequest">
+    <part name="request" element="tns:getFilesRequestEnvelope"/>
+  </message>
+  <message name="getFilesResponse">
+    <part name="response" element="tns:getFilesResponseEnvelope"/>
+  </message>
+	
+	
+  <message name="getFilesFault">
+    <part name="response" element="tns:getFilesFaultEnvelope"/>
+  </message>
+  
+  <message name="getVersionRequest">
+    <part name="request" element="tns:getVersionRequestEnvelope"/>
+  </message>
+  <message name="getVersionResponse">
+    <part name="response" element="tns:getVersionResponseEnvelope"/>
+  </message>
+	
+  <message name="getIndexedFilesRequest">
+    <part name="request" element="tns:getIndexedFilesRequestEnvelope"/>
+  </message>
+  <message name="getIndexedFilesResponse">
+    <part name="response" element="tns:getIndexedFilesResponseEnvelope"/>
+  </message>
+  <message name="getIndexedFilesFault">
+    <part name="faultResponse" element="tns:getIndexedFilesFaultEnvelope"/>
+  </message>
+  
+  <portType name="FileManagerEndpoint">
+    <operation name="storeFile">
+      <input message="tns:storeFileRequest"/>
+      <output message="tns:storeFileResponse"/>
+      <fault name="fault" message="tns:storeFileFault"/>
+    </operation>
+    
+    <operation name="getFiles">
+      <input message="tns:getFilesRequest"/>
+      <output message="tns:getFilesResponse"/>
+      <fault name="fault" message="tns:getFilesFault"/>
+    </operation>
+    
+    <operation name="getVersion">
+      <input name="getVersionRequest" message="tns:getVersionRequest"/>
+      <output name="getVersionResponse" message="tns:getVersionResponse"/>
+    </operation>
+		
+    <operation name="getIndexedFiles">
+      <input message="tns:getIndexedFilesRequest"/>
+      <output message="tns:getIndexedFilesResponse"/>
+      <fault name="fault" message="tns:getIndexedFilesFault"/>
+    </operation>		
+		
+    <operation name="getIdsList">
+      <input name="getIdsListRequest" message="tns:getIdsListRequest"/>
+      <output name="getIdsListResponse" message="tns:getIdsListResponse"/>
+    </operation>
+		
+  </portType>
+  <binding name="FileManagerEndpointBinding" type="tns:FileManagerEndpoint">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>    
+	<operation name="getIdsList">
+    <soap:operation/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      
+    </operation>
+		
+
+	<operation name="getIndexedFiles">
+    <soap:operation/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      
+    </operation>
+
+		
+		<operation name="storeFile">
+      <soap:operation/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="fault">
+        <soap:fault name="fault" use="literal"/>
+      </fault>
+    </operation>
+    
+    <operation name="getFiles">
+      <soap:operation/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="fault">
+        <soap:fault name="fault" use="literal"/>
+      </fault>
+    </operation>
+    
+    <operation name="getVersion">
+      <soap:operation/>
+      <input name="getVersionRequest">
+          <soap:body use="literal"/>
+      </input>
+      <output name="getVersionResponse">
+          <soap:body use="literal"/>
+      </output>
+    </operation>
+    
+  </binding>
+  <service name="FileManagerService">
+    <port name="FileManagerEndpointPort" binding="tns:FileManagerEndpointBinding">
+      <soap:address location="http://syk-vs40:8804/filemanager/FileManager?wsdl"/>
+    </port>
+  </service>
+</definitions>
